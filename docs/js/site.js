@@ -60,9 +60,9 @@ window.IFA_SITE = {
     { id: "11.2", name: "Halle 11.2", shortCode: "11.2", area: "Ost", floor: 2, category: "audio", x: 74, y: 38, w: 10, h: 8, neighbors: ["11.1", "10.2", "12"] },
 
     // —— Ost außen: Beauty 12–15 ——
-    { id: "12", name: "Halle 12", shortCode: "12", area: "Nordost", floor: 1, category: "beauty", x: 86, y: 38, w: 9, h: 8, neighbors: ["11.1", "13"], hints: "Bodyfriend" },
-    { id: "13", name: "Halle 13", shortCode: "13", area: "Nordost", floor: 1, category: "beauty", x: 86, y: 28, w: 9, h: 8, neighbors: ["12", "14"] },
-    { id: "14", name: "Halle 14", shortCode: "14", area: "Nordost", floor: 1, category: "beauty", x: 86, y: 18, w: 9, h: 8, neighbors: ["13", "15"], hints: "Beauty Hub" },
+    { id: "12", name: "Halle 12", shortCode: "12", area: "Nordost", floor: 1, category: "beauty", x: 86, y: 38, w: 9, h: 8, neighbors: ["11.1", "13"], hints: "BODYFRIEND, Therabody, Hyperice, Renpho" },
+    { id: "13", name: "Halle 13", shortCode: "13", area: "Nordost", floor: 1, category: "beauty", x: 86, y: 28, w: 9, h: 8, neighbors: ["12", "14"], hints: "Beauty Hub, TYMO, Withings" },
+    { id: "14", name: "Halle 14", shortCode: "14", area: "Nordost", floor: 1, category: "beauty", x: 86, y: 18, w: 9, h: 8, neighbors: ["13", "15"], hints: "Bixdo, Bebird, Lovense, Nekteck" },
     { id: "15", name: "Halle 15", shortCode: "15", area: "Nordost", floor: 1, category: "beauty", x: 86, y: 8, w: 9, h: 8, neighbors: ["14", "16"] },
 
     // —— Nordost: Funkturm / IFA Next ——
@@ -226,6 +226,45 @@ window.IFA_SITE = {
     { id: "s-picea", hallId: "9", name: "PICEA", booth: "H9", x: 82, y: 74 },
     { id: "s-hutt", hallId: "9", name: "Hutt", booth: "H9", x: 90, y: 58 },
     { id: "s-lounge9", hallId: "9", name: "Lounge", booth: "H9", x: 12, y: 78 },
+    // Halle 12 – Wellness / Fitness Tech
+    { id: "s-bodyfriend", hallId: "12", name: "BODYFRIEND", booth: "H12", x: 22, y: 12 },
+    { id: "s-uniorange", hallId: "12", name: "Uniorange", booth: "H12", x: 8, y: 12 },
+    { id: "s-yoose", hallId: "12", name: "Yoose", booth: "H12", x: 78, y: 12 },
+    { id: "s-ascentic", hallId: "12", name: "Ascentic", booth: "H12", x: 58, y: 12 },
+    { id: "s-skg", hallId: "12", name: "SKG", booth: "H12", x: 8, y: 36 },
+    { id: "s-therabody", hallId: "12", name: "Therabody", booth: "H12-120", x: 22, y: 36 },
+    { id: "s-speedi", hallId: "12", name: "Speedi", booth: "H12-121", x: 40, y: 36 },
+    { id: "s-hyperice", hallId: "12", name: "Hyperice", booth: "H12-117", x: 58, y: 36 },
+    { id: "s-kingsmith", hallId: "12", name: "Kingsmith", booth: "H12-11", x: 74, y: 36 },
+    { id: "s-renpho", hallId: "12", name: "Renpho / ELEEELS", booth: "H12", x: 88, y: 32 },
+    { id: "s-medisana", hallId: "12", name: "Medisana", booth: "H12", x: 88, y: 48 },
+    { id: "s-urevo", hallId: "12", name: "UREVO", booth: "H12", x: 10, y: 62 },
+    { id: "s-jovs", hallId: "12", name: "JOVS", booth: "H12", x: 26, y: 62 },
+    { id: "s-deerrun", hallId: "12", name: "DeerRun", booth: "H12", x: 52, y: 62 },
+    { id: "s-beeskin", hallId: "12", name: "Beeskin", booth: "H12", x: 68, y: 62 },
+    { id: "s-rotai", hallId: "12", name: "Rotai", booth: "H12", x: 14, y: 48 },
+    // Halle 13 – Beauty Hub
+    { id: "s-beautyhub", hallId: "13", name: "Beauty Hub", booth: "H13", x: 48, y: 48 },
+    { id: "s-tymo", hallId: "13", name: "TYMO", booth: "H13-10", x: 48, y: 18 },
+    { id: "s-withings", hallId: "13", name: "Withings", booth: "H13-107", x: 72, y: 40 },
+    { id: "s-nuon", hallId: "13", name: "Nuon", booth: "H13-11", x: 62, y: 68 },
+    { id: "s-womar", hallId: "13", name: "Womar", booth: "H13-103", x: 28, y: 68 },
+    { id: "s-prinke", hallId: "13", name: "Prinke", booth: "H13", x: 48, y: 72 },
+    { id: "s-h13-104", hallId: "13", name: "H13-104", booth: "H13-104", x: 22, y: 40 },
+    { id: "s-h13-106", hallId: "13", name: "H13-106", booth: "H13-106", x: 68, y: 22 },
+    // Halle 14 – Beauty / Personal Care
+    { id: "s-bixdo", hallId: "14", name: "Bixdo", booth: "H14-101", x: 18, y: 28 },
+    { id: "s-nekteck", hallId: "14", name: "Nekteck", booth: "H14-107", x: 38, y: 22 },
+    { id: "s-lovense", hallId: "14", name: "Lovense", booth: "H14-109", x: 58, y: 22 },
+    { id: "s-smartpro", hallId: "14", name: "Smartpro", booth: "H14-111", x: 78, y: 22 },
+    { id: "s-bebird", hallId: "14", name: "bebird", booth: "H14-115", x: 38, y: 42 },
+    { id: "s-healthp", hallId: "14", name: "Healthp", booth: "H14-117", x: 58, y: 42 },
+    { id: "s-yueli", hallId: "14", name: "Yueli", booth: "H14-119", x: 78, y: 42 },
+    { id: "s-ringc", hallId: "14", name: "RingConn", booth: "H14-12", x: 38, y: 62 },
+    { id: "s-icew", hallId: "14", name: "ICE W", booth: "H14-12", x: 58, y: 62 },
+    { id: "s-apiyoo", hallId: "14", name: "Apiyoo", booth: "H14", x: 18, y: 52 },
+    { id: "s-seago", hallId: "14", name: "Seago", booth: "H14", x: 18, y: 68 },
+    { id: "s-amory", hallId: "14", name: "Amory", booth: "H14", x: 78, y: 68 },
     // Weitere
     { id: "s-tiktok", hallId: "17", name: "TikTok", booth: "H17-200", x: 45, y: 40 },
     { id: "s-prusa", hallId: "17", name: "Prusa Research", booth: "H17-215", x: 70, y: 55 }
