@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#0b1210" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="description" content="Privates IFA Berlin Messetagebuch" />
+  <meta name="description" content="IFA Tagebuch mit Hallenplan, Navigation und QR-Check-in" />
   <title>IFA Tagebuch</title>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="stylesheet" href="css/app.css" />
@@ -16,7 +16,7 @@
     <header class="topbar">
       <div>
         <p class="brand">IFA Tagebuch</p>
-        <h1 id="screenTitle">Hallen</h1>
+        <h1 id="screenTitle">Lageplan</h1>
       </div>
       <div class="topbar-actions" id="topbarActions"></div>
     </header>
@@ -26,10 +26,10 @@
 
     <nav class="tabbar">
       <button type="button" class="tab active" data-tab="halls">
-        <span class="tab-icon">▦</span>Hallen
+        <span class="tab-icon">🗺️</span>Plan
       </button>
       <button type="button" class="tab" data-tab="stats">
-        <span class="tab-icon">▣</span>Verlauf
+        <span class="tab-icon">📋</span>Verlauf
       </button>
     </nav>
   </div>
@@ -38,15 +38,18 @@
     <div class="sheet-inner">
       <header class="sheet-header">
         <button type="button" class="text-btn" id="detailClose">Schließen</button>
-        <strong id="detailTitle">Halle</strong>
-        <button type="button" class="text-btn accent" id="detailSave">Sichern</button>
+        <strong id="detailTitle">Stand</strong>
+        <button type="button" class="text-btn accent hidden" id="detailSave">Sichern</button>
       </header>
       <div class="sheet-body" id="detailBody"></div>
     </div>
   </dialog>
 
-  <script src="js/halls.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+  <script src="js/site.js"></script>
   <script src="js/storage.js"></script>
+  <script src="js/map.js"></script>
+  <script src="js/scanner.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>

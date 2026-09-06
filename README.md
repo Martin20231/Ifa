@@ -93,3 +93,15 @@ open IFATagebuch.xcodeproj
 - Xcode 15+
 - iOS 17+
 - Swift 5.9+
+
+## Web-App Features (iPhone)
+
+URL: **https://martin20231.github.io/Ifa/**
+
+- Schematischer **Hallenplan** + Hallen-Check-in
+- **Navigation** zwischen Hallen (kürzester Weg)
+- Stand antippen → **QR scannen** oder **manuell eintragen**
+- Merkliste + Verlauf lokal im Browser
+
+Hinweis: Das ist kein offizieller IFA-Plan mit allen Stand-Polygonen, sondern ein privates Tagebuch mit Lageplan-Hilfe.
+
