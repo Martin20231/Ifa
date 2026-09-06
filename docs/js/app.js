@@ -2,6 +2,7 @@
   "use strict";
 
   var state = IFAStorage.load();
+  if (!Array.isArray(state.geoTrail)) state.geoTrail = [];
   var tab = "map";
   var selectedHallId = null;
   var navFrom = "";
@@ -9,6 +10,9 @@
   var pathIds = [];
   var query = "";
   var draft = null;
+  var geoPos = null;
+  var geoStatus = "";
+  var geoSaveTimer = null;
 
   var els = {
     title: document.getElementById("screenTitle"),
@@ -310,13 +314,27 @@
 
   function paintMapCard(card) {
     var fl = IFAMap.getFloor();
+    var tracking = !!(window.IFAGps && IFAGps.isTracking());
     card.innerHTML =
       '<div class="floor-toggle seg" role="group" aria-label="Ebene">' +
       '<button type="button" data-floor="eg" class="' + (fl === "eg" ? "active" : "") + '">EG (.1)</button>' +
       '<button type="button" data-floor="og" class="' + (fl === "og" ? "active" : "") + '">OG (.2)</button>' +
       "</div>" +
-      IFAMap.renderSiteMap({ selectedId: selectedHallId, pathIds: pathIds, visited: visitedHallMap() }) +
-      '<p class="muted map-caption">Wie der IFA-Plan · EG/OG umschalten · Route türkis · Besucht grün</p>';
+      '<div class="gps-bar">' +
+      '<button type="button" class="secondary-btn gps-btn" id="btnGps">' +
+      (tracking ? "GPS aus" : "GPS an") + "</button>" +
+      '<button type="button" class="secondary-btn gps-btn" id="btnGpsClear">Spur löschen</button>' +
+      "</div>" +
+      IFAMap.renderSiteMap({
+        selectedId: selectedHallId,
+        pathIds: pathIds,
+        visited: visitedHallMap(),
+        geoTrail: state.geoTrail || [],
+        geoPos: geoPos
+      }) +
+      '<p class="muted map-caption" id="gpsStatus">' +
+      esc(geoStatus || "GPS optional · in Hallen oft ungenau · Spur wie beim Sauger") +
+      "</p>";
     card.querySelectorAll("[data-floor]").forEach(function (btn) {
       btn.onclick = function () {
         IFAMap.setFloor(btn.getAttribute("data-floor"));
@@ -324,6 +342,82 @@
         bind(card);
       };
     });
+    var gpsBtn = card.querySelector("#btnGps");
+    if (gpsBtn) gpsBtn.onclick = function () { toggleGps(card); };
+    var clearBtn = card.querySelector("#btnGpsClear");
+    if (clearBtn) clearBtn.onclick = function () {
+      state.geoTrail = [];
+      geoPos = null;
+      geoStatus = "Spur gelöscht.";
+      persist();
+      paintMapCard(card);
+      bind(card);
+    };
+  }
+
+  function scheduleGeoSave() {
+    if (geoSaveTimer) clearTimeout(geoSaveTimer);
+    geoSaveTimer = setTimeout(function () { persist(); }, 1200);
+  }
+
+  function onGpsUpdate(payload) {
+    var card = document.getElementById("mapCard");
+    if (payload.error) {
+      geoStatus = payload.error;
+      if (card && tab === "map") {
+        var st = card.querySelector("#gpsStatus");
+        if (st) st.textContent = geoStatus;
+      }
+      return;
+    }
+    var fix = payload.fix;
+    if (!fix) return;
+    geoPos = { x: fix.x, y: fix.y, accuracy: fix.accuracy };
+    if (!fix.onSite) {
+      geoStatus = "GPS aktiv, aber außerhalb der Messe-Karte (±" + Math.round(fix.accuracy || 0) + " m)";
+    } else {
+      geoStatus =
+        "GPS ±" + Math.round(fix.accuracy || 0) + " m · " +
+        (state.geoTrail ? state.geoTrail.length : 0) + " Spurpunkte";
+      if (IFAGps.shouldKeepPoint(state.geoTrail, fix)) {
+        state.geoTrail.push({
+          lat: fix.lat,
+          lng: fix.lng,
+          x: fix.x,
+          y: fix.y,
+          accuracy: fix.accuracy,
+          at: fix.at
+        });
+        if (state.geoTrail.length > 800) state.geoTrail = state.geoTrail.slice(-800);
+        scheduleGeoSave();
+      }
+    }
+    if (card && tab === "map") {
+      paintMapCard(card);
+      bind(card);
+    }
+  }
+
+  function toggleGps(card) {
+    if (!window.IFAGps) {
+      alert("GPS-Modul nicht geladen.");
+      return;
+    }
+    if (IFAGps.isTracking()) {
+      IFAGps.stop();
+      state.geoTracking = false;
+      geoStatus = "GPS aus.";
+      persist();
+      paintMapCard(card);
+      bind(card);
+      return;
+    }
+    geoStatus = "GPS wird angefragt…";
+    paintMapCard(card);
+    bind(card);
+    state.geoTracking = true;
+    persist();
+    IFAGps.start(onGpsUpdate);
   }
 
   function renderMap() {
@@ -363,7 +457,6 @@
         info.textContent = "Route: " + pathIds.map(function (id) {
           return (hall(id) || {}).shortCode || id;
         }).join(" → ");
-        // Ebene an Ziel anpassen, wenn gestapelt
         var target = hall(navTo);
         if (target && target.floor === 2) IFAMap.setFloor("og");
         else if (target && target.floor === 1) IFAMap.setFloor("eg");
@@ -376,6 +469,10 @@
       openForm({ hallId: selectedHallId || "2.1", via: "manual" });
     };
     bind(els.main);
+
+    if (state.geoTracking && window.IFAGps && !IFAGps.isTracking()) {
+      IFAGps.start(onGpsUpdate);
+    }
   }
 
   function renderHall() {

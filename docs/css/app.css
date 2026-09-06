@@ -405,6 +405,17 @@ button, input, textarea { font: inherit; color: inherit; }
 }
 .floor-toggle.seg { width: 100%; justify-content: stretch; }
 .floor-toggle.seg button { flex: 1; }
+.gps-bar {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin: 0 0 10px;
+}
+.gps-btn {
+  margin-top: 0;
+  padding: 10px 12px;
+  font-size: 0.85rem;
+}
 .nav-card h2, .section-title {
   margin: 0 0 10px;
   font-size: 0.95rem;

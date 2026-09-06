@@ -98,6 +98,33 @@ window.IFAMap = (function () {
     return html;
   }
 
+  function renderGeoOverlay(opts) {
+    var trail = opts.geoTrail || [];
+    var pos = opts.geoPos || null;
+    var html = "";
+    if (trail.length > 1) {
+      var pts = trail
+        .map(function (p) { return Number(p.x).toFixed(2) + "," + Number(p.y).toFixed(2); })
+        .join(" ");
+      html +=
+        '<polyline class="geo-trail" fill="none" stroke="#f8fafc" stroke-width="0.55" ' +
+        'stroke-linecap="round" stroke-linejoin="round" opacity="0.55" points="' + pts + '"></polyline>' +
+        '<polyline class="geo-trail-accent" fill="none" stroke="#38bdf8" stroke-width="0.35" ' +
+        'stroke-linecap="round" stroke-linejoin="round" opacity="0.95" points="' + pts + '"></polyline>';
+    }
+    if (pos && typeof pos.x === "number" && typeof pos.y === "number") {
+      var r = pos.accuracy ? Math.min(8, Math.max(1.2, pos.accuracy / 18)) : 2.2;
+      html +=
+        '<circle cx="' + pos.x + '" cy="' + pos.y + '" r="' + r +
+        '" fill="#38bdf8" fill-opacity="0.18" stroke="#7dd3fc" stroke-width="0.2"></circle>' +
+        '<circle cx="' + pos.x + '" cy="' + pos.y +
+        '" r="1.35" fill="#0ea5e9" stroke="#f0f9ff" stroke-width="0.45"></circle>' +
+        '<circle cx="' + pos.x + '" cy="' + pos.y +
+        '" r="0.45" fill="#ecfeff"></circle>';
+    }
+    return html;
+  }
+
   function renderSiteMap(opts) {
     opts = opts || {};
     var selectedId = opts.selectedId || null;
@@ -169,6 +196,7 @@ window.IFAMap = (function () {
         '" stroke="' + (sgSel ? "#f8fafc" : "transparent") + '" stroke-width="0.6"></rect></g>';
     }
 
+    svg += renderGeoOverlay(opts);
     svg += renderLegend();
     svg += "</svg>";
     return svg;

@@ -7,7 +7,9 @@
       standVisits: {},
       customStands: [],
       bookmarks: {},
-      events: []
+      events: [],
+      geoTrail: [],
+      geoTracking: false
     };
   }
 
@@ -47,7 +49,9 @@
         standVisits: data.standVisits || {},
         customStands: Array.isArray(data.customStands) ? data.customStands : [],
         bookmarks: data.bookmarks || {},
-        events: Array.isArray(data.events) ? data.events : []
+        events: Array.isArray(data.events) ? data.events : [],
+        geoTrail: Array.isArray(data.geoTrail) ? data.geoTrail : [],
+        geoTracking: !!data.geoTracking
       });
     } catch (e) {
       return emptyState();
