@@ -56,7 +56,7 @@ window.IFA_SITE = {
     // —— Ost innen (zum Garten): 10 / 11 ——
     { id: "10.1", name: "Halle 10.1", shortCode: "10.1", area: "Ost", floor: 1, category: "appliances", x: 74, y: 48, w: 10, h: 8, neighbors: ["9", "10.2", "11.1", "sg"], hints: "Hizero, Proscenic, Hobot, China House" },
     { id: "10.2", name: "Halle 10.2", shortCode: "10.2", area: "Ost", floor: 2, category: "audio", x: 74, y: 48, w: 10, h: 8, neighbors: ["10.1", "8.2", "11.2"] },
-    { id: "11.1", name: "Halle 11.1", shortCode: "11.1", area: "Ost", floor: 1, category: "appliances", x: 74, y: 38, w: 10, h: 8, neighbors: ["10.1", "11.2", "12"], hints: "AUX, Vevor" },
+    { id: "11.1", name: "Halle 11.1", shortCode: "11.1", area: "Ost", floor: 1, category: "appliances", x: 74, y: 38, w: 10, h: 8, neighbors: ["10.1", "11.2", "12"], hints: "VEVOR, AUX, Zhejiang, Anthbot, Lymow" },
     { id: "11.2", name: "Halle 11.2", shortCode: "11.2", area: "Ost", floor: 2, category: "audio", x: 74, y: 38, w: 10, h: 8, neighbors: ["11.1", "10.2", "12"] },
 
     // —— Ost außen: Beauty 12–15 ——
@@ -245,6 +245,27 @@ window.IFA_SITE = {
     { id: "s-chinahouse", hallId: "10.1", name: "China House", booth: "H10.1-121", x: 40, y: 68 },
     { id: "s-deye", hallId: "10.1", name: "DEYE", booth: "H10.1", x: 68, y: 68 },
     { id: "s-yueda", hallId: "10.1", name: "YUEDA", booth: "H10.1", x: 28, y: 68 },
+    // Halle 11.1
+    { id: "s-luxe111", hallId: "11.1", name: "LUXE", booth: "H11.1-129", x: 12, y: 12 },
+    { id: "s-guangzhou111", hallId: "11.1", name: "Guangzhou", booth: "H11.1", x: 28, y: 14 },
+    { id: "s-anthbot", hallId: "11.1", name: "Anthbot", booth: "H11.1-117", x: 22, y: 28 },
+    { id: "s-airse", hallId: "11.1", name: "Airse", booth: "H11.1-115", x: 40, y: 28 },
+    { id: "s-suburg", hallId: "11.1", name: "Suburg", booth: "H11.1", x: 56, y: 22 },
+    { id: "s-ultty", hallId: "11.1", name: "ULTTY", booth: "H11.1", x: 68, y: 22 },
+    { id: "s-vevor", hallId: "11.1", name: "VEVOR", booth: "H11.1-111", x: 22, y: 44 },
+    { id: "s-xlear", hallId: "11.1", name: "xLear", booth: "H11.1-113", x: 42, y: 44 },
+    { id: "s-zhejiang", hallId: "11.1", name: "Zhejiang S", booth: "H11.1-107", x: 28, y: 60 },
+    { id: "s-aux111", hallId: "11.1", name: "AUX", booth: "H11.1-127", x: 58, y: 36 },
+    { id: "s-fmart", hallId: "11.1", name: "Fmart", booth: "H11.1", x: 74, y: 32 },
+    { id: "s-vtune", hallId: "11.1", name: "Vtune", booth: "H11.1", x: 74, y: 44 },
+    { id: "s-klinsmann", hallId: "11.1", name: "Klinsmann", booth: "H11.1", x: 74, y: 56 },
+    { id: "s-tosima", hallId: "11.1", name: "Tosima", booth: "H11.1", x: 74, y: 68 },
+    { id: "s-prova", hallId: "11.1", name: "Prova", booth: "H11.1-123", x: 58, y: 52 },
+    { id: "s-zilla", hallId: "11.1", name: "Zilla", booth: "H11.1-125", x: 58, y: 66 },
+    { id: "s-lymow", hallId: "11.1", name: "Lymow Tech", booth: "H11.1-105", x: 22, y: 74 },
+    { id: "s-wybotics", hallId: "11.1", name: "Wybotics", booth: "H11.1-103", x: 40, y: 74 },
+    { id: "s-h111-101", hallId: "11.1", name: "2 Exhibitors", booth: "H11.1-101", x: 58, y: 78 },
+    { id: "s-lounge111a", hallId: "11.1", name: "Lounge", booth: "H11.1", x: 48, y: 56 },
     // Halle 12 – Wellness / Fitness Tech
     { id: "s-bodyfriend", hallId: "12", name: "BODYFRIEND", booth: "H12", x: 22, y: 12 },
     { id: "s-uniorange", hallId: "12", name: "Uniorange", booth: "H12", x: 8, y: 12 },
