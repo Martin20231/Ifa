@@ -30,7 +30,7 @@ window.IFA_SITE = {
 
     // —— Südwest: Hallen 1–6 (EG blau / OG rot·cyan·gelb) ——
     { id: "1.1", name: "Halle 1.1", shortCode: "1.1", area: "Südwest", floor: 1, category: "appliances", x: 14, y: 78, w: 10, h: 9, neighbors: ["1.2", "2.1", "citycube-a", "5.1"], hints: "Bosch, Ferre" },
-    { id: "1.2", name: "Halle 1.2", shortCode: "1.2", area: "Südwest", floor: 2, category: "smartHome", x: 14, y: 78, w: 10, h: 9, neighbors: ["1.1", "2.2"], hints: "Smart Home" },
+    { id: "1.2", name: "Halle 1.2", shortCode: "1.2", area: "Südwest", floor: 2, category: "smartHome", x: 14, y: 78, w: 10, h: 9, neighbors: ["1.1", "2.2"], hints: "Shelly, Reolink, EZVIZ, Tuya, Govee, Aqara" },
     { id: "2.1", name: "Halle 2.1", shortCode: "2.1", area: "Südwest", floor: 1, category: "appliances", x: 25, y: 78, w: 10, h: 9, neighbors: ["1.1", "2.2", "3.1"], hints: "Miele, Liebherr, JURA, Kärcher" },
     { id: "2.2", name: "Halle 2.2", shortCode: "2.2", area: "Südwest", floor: 2, category: "smartHome", x: 25, y: 78, w: 10, h: 9, neighbors: ["2.1", "1.2", "3.2"], hints: "Smart Home" },
     { id: "3.1", name: "Halle 3.1", shortCode: "3.1", area: "West", floor: 1, category: "appliances", x: 14, y: 66, w: 10, h: 9, neighbors: ["2.1", "3.2", "4.1"], hints: "Haier, Cecotec" },
@@ -94,6 +94,25 @@ window.IFA_SITE = {
     // Halle 1.1
     { id: "s-bosch", hallId: "1.1", name: "Bosch Home Appliances", booth: "H1.1", x: 28, y: 28 },
     { id: "s-ferre", hallId: "1.1", name: "Ferre", booth: "H1.1-105", x: 62, y: 55 },
+    // Halle 1.2 – Smart Home (aus IFA-Hallenplan)
+    { id: "s-govee", hallId: "1.2", name: "Govee / GoveeLife", booth: "H1.2", x: 14, y: 14 },
+    { id: "s-yeelight", hallId: "1.2", name: "Yeelight", booth: "H1.2", x: 36, y: 14 },
+    { id: "s-shelly", hallId: "1.2", name: "Shelly", booth: "H1.2-110", x: 58, y: 16 },
+    { id: "s-avatto", hallId: "1.2", name: "AVATTO / ubisys", booth: "H1.2-146", x: 48, y: 28 },
+    { id: "s-sonoff", hallId: "1.2", name: "Sonoff", booth: "H1.2", x: 18, y: 32 },
+    { id: "s-starlink12", hallId: "1.2", name: "Starlink", booth: "H1.2", x: 38, y: 36 },
+    { id: "s-meari", hallId: "1.2", name: "Meari Tech", booth: "H1.2", x: 58, y: 36 },
+    { id: "s-dahua", hallId: "1.2", name: "Dahua / Open Home / BroadLink", booth: "H1.2", x: 72, y: 34 },
+    { id: "s-aqara", hallId: "1.2", name: "Aqara LLC", booth: "H1.2", x: 86, y: 36 },
+    { id: "s-aosu", hallId: "1.2", name: "AOSU", booth: "H1.2", x: 62, y: 48 },
+    { id: "s-vstarcam", hallId: "1.2", name: "VSTARCAM", booth: "H1.2", x: 78, y: 48 },
+    { id: "s-blurams", hallId: "1.2", name: "BLURAMS", booth: "H1.2", x: 12, y: 58 },
+    { id: "s-reolink", hallId: "1.2", name: "Reolink", booth: "H1.2-181", x: 32, y: 60 },
+    { id: "s-ezviz", hallId: "1.2", name: "EZVIZ", booth: "H1.2-175", x: 54, y: 60 },
+    { id: "s-tuya", hallId: "1.2", name: "Tuya Global", booth: "H1.2-16", x: 76, y: 62 },
+    { id: "s-technoline", hallId: "1.2", name: "Technoline", booth: "H1.2", x: 20, y: 72 },
+    { id: "s-vde12", hallId: "1.2", name: "VDE", booth: "H1.2", x: 8, y: 68 },
+    { id: "s-eurom", hallId: "1.2", name: "EUROM", booth: "H1.2", x: 40, y: 72 },
     // Halle 2.1
     { id: "s-miele", hallId: "2.1", name: "Miele", booth: "H2.1-101", x: 18, y: 28 },
     { id: "s-jura", hallId: "2.1", name: "JURA", booth: "H2.1-103", x: 70, y: 28 },
