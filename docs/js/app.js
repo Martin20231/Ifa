@@ -141,6 +141,29 @@
     });
   }
 
+
+  function hintsBlock(hallId) {
+    var h = hallById(hallId);
+    if (!h || !h.hints) return "";
+    var items = String(h.hints).split(",").map(function (x) { return x.trim(); }).filter(Boolean);
+    if (!items.length) return "";
+    return (
+      '<div class="field"><label>Tipps aus Hallenplan</label><div class="chips">' +
+      items
+        .map(function (name) {
+          return (
+            '<button type="button" class="chip hint-chip" data-hint="' +
+            escapeAttr(name) +
+            '">' +
+            escapeHtml(name) +
+            "</button>"
+          );
+        })
+        .join("") +
+      '</div><p class="muted" style="margin:6px 0 0">Tipp antippen = zu Herstellern hinzufügen</p></div>'
+    );
+  }
+
   function renderDetailBody() {
     var s = hallState(activeHallId);
     var photos = draft.photos.map(function (src, i) {
@@ -156,6 +179,7 @@
       '<button type="button" class="' + (s.visited ? "danger-btn" : "primary-btn") + '" id="detailCheck">' +
       (s.visited ? "Check-in zurücksetzen" : "Jetzt einchecken") +
       "</button>" +
+      hintsBlock(activeHallId) +
       '<div class="field" style="margin-top:14px"><label for="mfr">Stände / Hersteller</label>' +
       '<input id="mfr" value="' + escapeAttr(draft.manufacturers) + '" placeholder="Samsung, Sony, LG…" /></div>' +
       '<div class="field"><label for="notes">Notizen</label>' +
@@ -182,6 +206,18 @@
     els.detailBody.querySelectorAll("[data-photo-del]").forEach(function (btn) {
       btn.onclick = function () {
         draft.photos.splice(Number(btn.getAttribute("data-photo-del")), 1);
+        renderDetailBody();
+      };
+    });
+    els.detailBody.querySelectorAll("[data-hint]").forEach(function (btn) {
+      btn.onclick = function () {
+        var name = btn.getAttribute("data-hint");
+        var current = String(draft.manufacturers || "")
+          .split(",")
+          .map(function (x) { return x.trim(); })
+          .filter(Boolean);
+        if (current.indexOf(name) === -1) current.push(name);
+        draft.manufacturers = current.join(", ");
         renderDetailBody();
       };
     });
@@ -281,7 +317,7 @@
             '<span class="hall-meta"><strong>' + escapeHtml(h.name) + "</strong><span>" +
             escapeHtml(h.area) +
             (s.visited && s.checkedInAt ? " · " + formatClock(s.checkedInAt) : "") +
-            (makers ? " · " + escapeHtml(makers) : "") +
+            (makers ? " · " + escapeHtml(makers) : (h.hints ? " · " + escapeHtml(h.hints) : "")) +
             "</span></span></button>" +
             '<button type="button" class="check-btn" data-check="' + h.id + '" aria-label="Check-in">' +
             (s.visited ? "✓" : "+") + "</button></div>";

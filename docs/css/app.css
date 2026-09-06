@@ -252,6 +252,11 @@ button, input, textarea { font: inherit; color: inherit; }
 }
 .event-row:last-child, .note-row:last-child { border-bottom: 0; }
 .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.hint-chip {
+  border: 1px solid rgba(45, 212, 191, 0.35);
+  background: rgba(45, 212, 191, 0.12);
+  cursor: pointer;
+}
 .chip {
   background: var(--accent-soft);
   color: var(--accent);
