@@ -203,6 +203,14 @@
     try { window.scrollTo(0, 0); } catch (e) {}
   }
 
+  function clearNavigation() {
+    navFrom = "";
+    navTo = "";
+    pathIds = [];
+    routeHint = "";
+    focusStandId = null;
+  }
+
   function navigateToStand(standId, openHall) {
     var s = stand(standId);
     if (!s) return;
@@ -582,6 +590,7 @@
       '<div class="nav-row"><label>Nach</label><select id="navTo">' + opts + "</select></div>" +
       '<button type="button" class="primary-btn" id="btnRoute">Route zeigen</button>' +
       (navTo ? '<button type="button" class="secondary-btn" id="btnOpenTarget">Zielhalle öffnen</button>' : "") +
+      (navTo || pathIds.length ? '<button type="button" class="secondary-btn danger-outline" id="btnEndNav">Navigation beenden</button>' : "") +
       '<p class="muted" id="routeInfo"></p></div>' +
       '<button type="button" class="secondary-btn" id="btnNew">+ Stand ohne QR anlegen</button>';
 
@@ -635,6 +644,13 @@
       render();
     };
 
+    var endNav = els.main.querySelector("#btnEndNav");
+    if (endNav) endNav.onclick = function () {
+      clearNavigation();
+      render();
+      try { window.scrollTo(0, 0); } catch (e) {}
+    };
+
     els.main.querySelector("#btnNew").onclick = function () {
       openForm({ hallId: selectedHallId || "2.1", via: "manual" });
     };
@@ -649,8 +665,16 @@
     var h = hall(selectedHallId);
     if (!h) { tab = "map"; return renderMap(); }
     els.title.textContent = h.name;
-    els.actions.innerHTML = '<button type="button" class="icon-chip" id="backMap">Plan</button>';
+    els.actions.innerHTML =
+      '<button type="button" class="icon-chip" id="backMap">Plan</button>' +
+      ((navTo || focusStandId) ? '<button type="button" class="icon-chip" id="endNavHall">Nav aus</button>' : "");
     els.actions.querySelector("#backMap").onclick = function () { tab = "map"; render(); };
+    var endHall = els.actions.querySelector("#endNavHall");
+    if (endHall) endHall.onclick = function () {
+      clearNavigation();
+      tab = "map";
+      render();
+    };
 
     var list = stands().filter(function (s) { return s.hallId === h.id; });
     var q = query.trim().toLowerCase();

@@ -629,3 +629,9 @@ button, input, textarea { font: inherit; color: inherit; }
 .hall-row.focus .hall-code {
   color: #fbbf24;
 }
+
+.secondary-btn.danger-outline {
+  color: #fecaca;
+  border-color: rgba(248, 113, 113, 0.45);
+  background: rgba(127, 29, 29, 0.25);
+}
