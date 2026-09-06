@@ -210,9 +210,9 @@ button, input, textarea { font: inherit; color: inherit; }
   bottom: 0;
   width: min(100%, 720px);
   height: calc(var(--tabbar-h) + var(--safe-bottom));
-  padding: 8px 16px var(--safe-bottom);
+  padding: 8px 12px var(--safe-bottom);
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
   background: rgba(11, 18, 16, 0.92);
   backdrop-filter: blur(14px);
   border-top: 1px solid var(--border);
@@ -720,3 +720,41 @@ button, input, textarea { font: inherit; color: inherit; }
   font-weight: 700;
 }
 .search-nav-hint { margin: 0 0 10px; }
+
+.food-num {
+  min-width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  background: rgba(251, 146, 60, 0.18);
+  color: #fdba74;
+  font-weight: 800;
+  font-size: 0.78rem;
+}
+.food-row {
+  grid-template-columns: 36px 1fr auto !important;
+}
+.food-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 10px 0 14px;
+}
+.food-tag {
+  border-radius: 999px;
+  padding: 5px 10px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid var(--border);
+}
+.food-tag.coffee { color: #fca5a5; }
+.food-tag.drinks { color: #93c5fd; }
+.food-tag.beer { color: #fde68a; }
+.food-tag.veg { color: #fdba74; }
+.food-tag.vegan { color: #86efac; }
+.food-tag.halal { color: #7dd3fc; }
+.tab {
+  font-size: 0.72rem;
+}

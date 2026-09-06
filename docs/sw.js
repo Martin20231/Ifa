@@ -1,5 +1,5 @@
 /* IFA Tagebuch – Offline-Cache für Messegelände ohne Netz */
-var CACHE = "ifa-tagebuch-20260906o";
+var CACHE = "ifa-tagebuch-20260906f";
 var ASSETS = [
   "./",
   "./index.html",
@@ -7,6 +7,7 @@ var ASSETS = [
   "./css/app.css",
   "./js/jsQR.min.js",
   "./js/site.js",
+  "./js/food.js",
   "./js/storage.js",
   "./js/map.js",
   "./js/gps.js",

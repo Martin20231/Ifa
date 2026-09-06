@@ -13,6 +13,10 @@
   var floorFilter = 0; // 0 = alle, 1 = EG, 2 = OG
   var unvisitedOnly = false;
   var offlineReady = false;
+  var foodQuery = "";
+  var foodZone = "all"; // all | hall | outdoor
+  var foodTag = ""; // coffee|drinks|beer|veg|vegan|halal
+  var foodLevel = "all"; // all | 1 | 2 | ZE1
   var draft = null;
   var geoPos = null;
   var geoStatus = "";
@@ -198,6 +202,85 @@
 
   function halls() { return window.IFA_HALLS || []; }
   function stands() { return IFAStorage.allStands(state); }
+  function foodList() { return window.IFA_FOOD || []; }
+
+  function foodById(id) {
+    return foodList().find(function (f) { return f.id === id; });
+  }
+
+  function foodLevelLabel(level) {
+    if (level === "1") return "Ebene 1";
+    if (level === "2") return "Ebene 2";
+    if (level === "ZE1") return "Zwischenebene";
+    return level || "";
+  }
+
+  function foodTagLabel(tag) {
+    return ({
+      coffee: "Kaffee",
+      drinks: "Getränke",
+      beer: "Bier",
+      veg: "Vegetarisch",
+      vegan: "Vegan",
+      halal: "Halal"
+    })[tag] || tag;
+  }
+
+  function filteredFood() {
+    var q = norm(foodQuery.trim());
+    return foodList().filter(function (f) {
+      if (foodZone === "hall" && f.zone !== "hall") return false;
+      if (foodZone === "outdoor" && f.zone !== "outdoor") return false;
+      if (foodLevel !== "all" && f.level !== foodLevel) return false;
+      if (foodTag && (f.tags || []).indexOf(foodTag) === -1) return false;
+      if (!q) return true;
+      var hay = [f.id, f.name, f.type, f.level, f.zone, foodLevelLabel(f.level)]
+        .concat(f.tags || []).concat((f.tags || []).map(foodTagLabel))
+        .map(norm).join(" ");
+      return q.split(/\s+/).every(function (part) {
+        return part && hay.indexOf(part) !== -1;
+      });
+    });
+  }
+
+  function openFoodSheet(foodId) {
+    var f = foodById(foodId);
+    if (!f) return;
+    draft = null;
+    els.detailTitle.textContent = f.name;
+    els.detailSave.classList.add("hidden");
+    els.detailBody.innerHTML =
+      '<div class="status-pill on">Nr. ' + esc(f.id) + "</div>" +
+      '<p class="muted">' + esc(f.type) + "</p>" +
+      '<p><strong>' + (f.zone === "outdoor" ? "Outdoor / Freigelände" : "In den Hallen") +
+      "</strong> · " + esc(foodLevelLabel(f.level)) + "</p>" +
+      '<div class="food-tags">' +
+      (f.tags || []).map(function (tag) {
+        return '<span class="food-tag ' + tag + '">' + esc(foodTagLabel(tag)) + "</span>";
+      }).join("") +
+      "</div>" +
+      '<p class="muted">Nummer am Messe-Cateringplan. Outdoor-Stände liegen im Freigelände / Sommergarten-Bereich.</p>' +
+      (f.zone === "outdoor"
+        ? '<button type="button" class="primary-btn" id="btnFoodMap">Sommergarten auf Plan</button>'
+        : '<button type="button" class="secondary-btn" id="btnFoodClose">Schließen</button>');
+    var mapBtn = els.detailBody.querySelector("#btnFoodMap");
+    if (mapBtn) mapBtn.onclick = function () {
+      closeDialog();
+      selectedHallId = "sg";
+      tab = "map";
+      document.querySelectorAll(".tab").forEach(function (b) {
+        b.classList.toggle("active", b.getAttribute("data-tab") === "halls");
+      });
+      pathIds = [];
+      routeHint = "Essen Outdoor · " + f.name;
+      render();
+    };
+    var closeBtn = els.detailBody.querySelector("#btnFoodClose");
+    if (closeBtn) closeBtn.onclick = function () { closeDialog(); };
+    openDialog();
+  }
+
+
   function hall(id) { return IFAMap.hallById(id); }
   function stand(id) {
     return stands().find(function (s) { return s.id === id; });
@@ -1079,7 +1162,24 @@
           '<span class="go">Route</span></button>';
       }).join("") :
         '<div class="empty">Tipp: „Audio“, „DJI“ oder „H2.2“ eingeben</div>') +
-      "</div>";
+      "</div>" +
+      (function () {
+        var fq = norm(query.trim());
+        if (!fq) return "";
+        var foods = foodList().filter(function (f) {
+          var hay = [f.id, f.name, f.type].concat(f.tags || []).map(norm).join(" ");
+          return fq.split(/\s+/).every(function (part) { return part && hay.indexOf(part) !== -1; });
+        }).slice(0, 12);
+        if (!foods.length) return "";
+        return '<div class="hall-hit" style="margin-top:14px"><p class="section-title">Essen & Trinken</p><div class="search-list">' +
+          foods.map(function (f) {
+            return '<button type="button" class="search-row food-row" data-food="' + f.id + '">' +
+              '<span class="food-num">' + esc(f.id) + "</span>" +
+              '<span class="search-copy"><strong>' + esc(f.name) + "</strong><span>" +
+              esc(f.type) + " · " + (f.zone === "outdoor" ? "Outdoor" : "Halle") +
+              '</span></span><span class="go">Essen</span></button>';
+          }).join("") + "</div></div>";
+      })();
 
     function refreshSearchKeepCaret() {
       renderSearch();
@@ -1127,6 +1227,9 @@
         unvisitedOnly = btn.getAttribute("data-visit") === "open";
         renderSearch();
       };
+    });
+    els.main.querySelectorAll("[data-food]").forEach(function (btn) {
+      btn.onclick = function () { openFoodSheet(btn.getAttribute("data-food")); };
     });
     bind(els.main);
   }
@@ -1179,11 +1282,101 @@
     bind(els.main);
   }
 
+
+  function goFood(focusInput) {
+    tab = "food";
+    document.querySelectorAll(".tab").forEach(function (b) {
+      b.classList.toggle("active", b.getAttribute("data-tab") === "food");
+    });
+    render();
+    try { window.scrollTo(0, 0); } catch (e) {}
+    if (focusInput === false) return;
+    setTimeout(function () {
+      var input = document.getElementById("foodInput");
+      if (input) input.focus();
+    }, 30);
+  }
+
+  function renderFood() {
+    els.title.textContent = "Essen & Trinken";
+    els.actions.innerHTML = "";
+    var list = filteredFood();
+    els.main.innerHTML =
+      '<input class="search" id="foodInput" type="search" enterkeyhint="search" ' +
+      'placeholder="Pizza, Kaffee, Vegan, Nr.…" value="' + escAttr(foodQuery) + '" />' +
+      '<div class="floor-chips">' +
+      '<button type="button" class="floor-chip' + (foodZone === "all" ? " active" : "") + '" data-food-zone="all">Alle</button>' +
+      '<button type="button" class="floor-chip' + (foodZone === "hall" ? " active" : "") + '" data-food-zone="hall">Hallen</button>' +
+      '<button type="button" class="floor-chip' + (foodZone === "outdoor" ? " active" : "") + '" data-food-zone="outdoor">Outdoor</button>' +
+      "</div>" +
+      '<div class="floor-chips">' +
+      '<button type="button" class="floor-chip' + (foodLevel === "all" ? " active" : "") + '" data-food-level="all">Alle Ebenen</button>' +
+      '<button type="button" class="floor-chip' + (foodLevel === "1" ? " active" : "") + '" data-food-level="1">Ebene 1</button>' +
+      '<button type="button" class="floor-chip' + (foodLevel === "2" ? " active" : "") + '" data-food-level="2">Ebene 2</button>' +
+      '<button type="button" class="floor-chip' + (foodLevel === "ZE1" ? " active" : "") + '" data-food-level="ZE1">ZE1</button>' +
+      "</div>" +
+      '<div class="cat-scroll">' +
+      '<button type="button" class="cat-chip' + (!foodTag ? " active" : "") + '" data-food-tag="">Alles</button>' +
+      [["coffee","Kaffee"],["drinks","Getränke"],["beer","Bier"],["veg","Vegetarisch"],["vegan","Vegan"]].map(function (pair) {
+        return '<button type="button" class="cat-chip' + (foodTag === pair[0] ? " active" : "") +
+          '" data-food-tag="' + pair[0] + '">' + pair[1] + "</button>";
+      }).join("") +
+      "</div>" +
+      '<div class="search-meta"><span>' + list.length + " Orte</span><span>" +
+      (foodZone === "outdoor" ? "Freigelände" : foodZone === "hall" ? "Hallen" : "Gesamtplan") +
+      "</span></div>" +
+      '<div class="search-list">' +
+      (list.length ? list.map(function (f) {
+        return '<button type="button" class="search-row food-row" data-food="' + f.id + '">' +
+          '<span class="food-num">' + esc(f.id) + "</span>" +
+          '<span class="search-copy"><strong>' + esc(f.name) + "</strong><span>" +
+          esc(f.type) + " · " + (f.zone === "outdoor" ? "Outdoor" : "Halle") +
+          " · " + esc(foodLevelLabel(f.level)) +
+          "</span></span>" +
+          '<span class="go">' + ((f.tags || []).indexOf("vegan") !== -1 ? "Vegan" :
+            (f.tags || []).indexOf("veg") !== -1 ? "Veg" :
+            (f.tags || []).indexOf("coffee") !== -1 ? "☕" : "→") + "</span></button>";
+      }).join("") : '<div class="empty">Kein Treffer – Filter lockern</div>') +
+      "</div>";
+
+    function refreshFood() {
+      renderFood();
+      var again = document.getElementById("foodInput");
+      if (again) {
+        again.focus();
+        var len = again.value.length;
+        try { again.setSelectionRange(len, len); } catch (e2) {}
+      }
+    }
+
+    var input = els.main.querySelector("#foodInput");
+    if (input) {
+      input.oninput = function (e) { foodQuery = e.target.value; refreshFood(); };
+      input.addEventListener("search", function () { foodQuery = input.value; refreshFood(); });
+      input.addEventListener("keydown", function (e) {
+        if (e.key === "Enter") { e.preventDefault(); foodQuery = input.value; refreshFood(); }
+      });
+    }
+    els.main.querySelectorAll("[data-food-zone]").forEach(function (btn) {
+      btn.onclick = function () { foodZone = btn.getAttribute("data-food-zone") || "all"; renderFood(); };
+    });
+    els.main.querySelectorAll("[data-food-level]").forEach(function (btn) {
+      btn.onclick = function () { foodLevel = btn.getAttribute("data-food-level") || "all"; renderFood(); };
+    });
+    els.main.querySelectorAll("[data-food-tag]").forEach(function (btn) {
+      btn.onclick = function () { foodTag = btn.getAttribute("data-food-tag") || ""; renderFood(); };
+    });
+    els.main.querySelectorAll("[data-food]").forEach(function (btn) {
+      btn.onclick = function () { openFoodSheet(btn.getAttribute("data-food")); };
+    });
+  }
+
   function render() {
     renderProgress();
     if (tab === "map") renderMap();
     else if (tab === "hall") renderHall();
     else if (tab === "search") renderSearch();
+    else if (tab === "food") renderFood();
     else renderHistory();
   }
 
@@ -1192,6 +1385,10 @@
       var t = btn.getAttribute("data-tab");
       if (t === "search") {
         goSearch(true);
+        return;
+      }
+      if (t === "food") {
+        goFood(true);
         return;
       }
       if (t === "stats") tab = "history";
@@ -1203,6 +1400,10 @@
       categoryFilter = "";
       floorFilter = 0;
       unvisitedOnly = false;
+      foodQuery = "";
+      foodZone = "all";
+      foodTag = "";
+      foodLevel = "all";
       render();
       try { window.scrollTo(0, 0); } catch (e) {}
     });
