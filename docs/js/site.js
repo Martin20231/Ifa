@@ -25,7 +25,7 @@ window.IFA_SITE = {
    */
   halls: [
     // —— Süd: CityCube ——
-    { id: "citycube-a", name: "CityCube A", shortCode: "A", area: "Süd", floor: 1, category: "mobility", x: 36, y: 90, w: 13, h: 7, neighbors: ["citycube-b", "7.1a", "1.1"], hints: "Retail Innovation Zone" },
+    { id: "citycube-a", name: "CityCube A (CCA)", shortCode: "CCA", area: "Süd", floor: 1, category: "mobility", x: 36, y: 90, w: 13, h: 7, neighbors: ["citycube-b", "7.1a", "1.1"], hints: "Acer · Innovation Stage" },
     { id: "citycube-b", name: "CityCube B", shortCode: "B", area: "Süd", floor: 1, category: "mobility", x: 51, y: 90, w: 13, h: 7, neighbors: ["citycube-a", "7.1a"], hints: "Mobility" },
 
     // —— Südwest: Hallen 1–6 (EG blau / OG rot·cyan·gelb) ——
@@ -66,8 +66,8 @@ window.IFA_SITE = {
     { id: "15", name: "Halle 15", shortCode: "15", area: "Nordost", floor: 1, category: "beauty", x: 86, y: 8, w: 9, h: 8, neighbors: ["14", "16"], hints: "YA-MAN, MERACH, Naipo, Roborock, Pongbot" },
 
     // —— Nordost: Funkturm / IFA Next ——
-    { id: "16", name: "Halle 16", shortCode: "16", area: "Nord", floor: 1, category: "next", x: 72, y: 8, w: 11, h: 8, neighbors: ["15", "17"] },
-    { id: "17", name: "Halle 17", shortCode: "17", area: "Nord", floor: 1, category: "next", x: 58, y: 8, w: 12, h: 8, neighbors: ["16", "palais", "sg"], hints: "TikTok, Prusa, Makera · Funkturm" },
+    { id: "16", name: "Halle 16", shortCode: "16", area: "Nord", floor: 1, category: "next", x: 72, y: 8, w: 11, h: 8, neighbors: ["15", "17"], hints: "Extended Reality Berlin-Brandenburg" },
+    { id: "17", name: "Halle 17", shortCode: "17", area: "Nord", floor: 1, category: "next", x: 58, y: 8, w: 12, h: 8, neighbors: ["16", "palais", "sg"], hints: "TikTok, Prusa, Makera, Bundeswehr · Funkturm" },
 
     // —— Nord: Palais & Content / Entertainment ——
     { id: "palais", name: "Palais", shortCode: "Palais", area: "Nord", floor: 1, category: "content", x: 44, y: 8, w: 12, h: 8, neighbors: ["17", "20", "19", "sg"], hints: "Creator Hub" },
@@ -307,7 +307,7 @@ window.IFA_SITE = {
     { id: "s-amory", hallId: "14", name: "Amory", booth: "H14", x: 78, y: 68 },
     // Halle 15 – Beauty / Fitness
     { id: "s-h15-119", hallId: "15", name: "H15-119", booth: "H15-119", x: 18, y: 10 },
-    { id: "s-viveo", hallId: "15", name: "Viveo", booth: "H15", x: 52, y: 10 },
+    { id: "s-vivoo", hallId: "15", name: "Vivoo", booth: "H15", x: 52, y: 10 },
     { id: "s-fitrx", hallId: "15", name: "FitRx", booth: "H15", x: 72, y: 10 },
     { id: "s-yaman", hallId: "15", name: "YA-MAN", booth: "H15", x: 18, y: 22 },
     { id: "s-roboc", hallId: "15", name: "RoboC", booth: "H15-121", x: 48, y: 26 },
@@ -328,9 +328,47 @@ window.IFA_SITE = {
     { id: "s-ivismil", hallId: "15", name: "Ivismil", booth: "H15", x: 18, y: 88 },
     { id: "s-mynextr", hallId: "15", name: "MYnextR / Fitcare", booth: "H15", x: 68, y: 88 },
     { id: "s-quas", hallId: "15", name: "Quas", booth: "H15", x: 88, y: 88 },
-    // Weitere
-    { id: "s-tiktok", hallId: "17", name: "TikTok", booth: "H17-200", x: 45, y: 40 },
-    { id: "s-prusa", hallId: "17", name: "Prusa Research", booth: "H17-215", x: 70, y: 55 }
+    // Halle 16 – Extended Reality
+    { id: "s-xrbb", hallId: "16", name: "Extended Reality Berlin-Brandenburg", booth: "H16", x: 50, y: 48 },
+    // Halle 17 – Maker / Content / Tech
+    { id: "s-bundeswehr", hallId: "17", name: "Bundeswehr", booth: "H17-241", x: 14, y: 18 },
+    { id: "s-procollo", hallId: "17", name: "Procollo", booth: "H17-249", x: 34, y: 16 },
+    { id: "s-ecalen", hallId: "17", name: "eCalen", booth: "H17-251", x: 50, y: 16 },
+    { id: "s-aochuan", hallId: "17", name: "Aochuan", booth: "H17", x: 66, y: 12 },
+    { id: "s-hisong", hallId: "17", name: "HISONG", booth: "H17", x: 78, y: 12 },
+    { id: "s-prusa", hallId: "17", name: "Prusa Research", booth: "H17", x: 90, y: 14 },
+    { id: "s-thytech", hallId: "17", name: "Thytech", booth: "H17", x: 92, y: 26 },
+    { id: "s-liene", hallId: "17", name: "Liene", booth: "H17-23", x: 14, y: 36 },
+    { id: "s-nelko", hallId: "17", name: "Nelko", booth: "H17-20", x: 14, y: 50 },
+    { id: "s-toolda", hallId: "17", name: "Toolda", booth: "H17-20", x: 14, y: 64 },
+    { id: "s-nimm", hallId: "17", name: "NIMM", booth: "H17-200", x: 28, y: 72 },
+    { id: "s-h17-2ex", hallId: "17", name: "2 Exhibitors", booth: "H17-209", x: 34, y: 44 },
+    { id: "s-ifa-lounge17", hallId: "17", name: "IFA Lounge", booth: "H17", x: 40, y: 56 },
+    { id: "s-ugreen-smart", hallId: "17", name: "UGreen Smart", booth: "H17", x: 48, y: 34 },
+    { id: "s-makera", hallId: "17", name: "Makera", booth: "H17-215", x: 58, y: 34 },
+    { id: "s-ifa-playbox", hallId: "17", name: "IFA Playbox", booth: "H17", x: 56, y: 48 },
+    { id: "s-ikier", hallId: "17", name: "ikier", booth: "H17-231", x: 48, y: 48 },
+    { id: "s-laser17", hallId: "17", name: "Laser", booth: "H17-235", x: 48, y: 60 },
+    { id: "s-nestw", hallId: "17", name: "Nestw", booth: "H17-227", x: 68, y: 38 },
+    { id: "s-nbd", hallId: "17", name: "NBD", booth: "H17", x: 78, y: 40 },
+    { id: "s-matataxplore", hallId: "17", name: "MatataXplore", booth: "H17", x: 78, y: 52 },
+    { id: "s-accel17", hallId: "17", name: "ACCEL", booth: "H17", x: 70, y: 26 },
+    { id: "s-tiktok", hallId: "17", name: "TikTok", booth: "H17", x: 84, y: 28 },
+    { id: "s-zeniko", hallId: "17", name: "Zeniko", booth: "H17", x: 84, y: 40 },
+    { id: "s-twotrees", hallId: "17", name: "Two Trees", booth: "H17", x: 84, y: 52 },
+    { id: "s-coolinbo", hallId: "17", name: "Coolinbo", booth: "H17", x: 92, y: 62 },
+    { id: "s-sainsmart", hallId: "17", name: "SainSmart", booth: "H17", x: 92, y: 74 },
+    { id: "s-ifa-fotobooth", hallId: "17", name: "IFA Fotobooth & Lounge", booth: "H17", x: 52, y: 72 },
+    { id: "s-morpho", hallId: "17", name: "Morpho", booth: "H17", x: 58, y: 84 },
+    { id: "s-kiezburger", hallId: "17", name: "Kiezbürger", booth: "H17", x: 72, y: 84 },
+    { id: "s-xprinter", hallId: "17", name: "Xprinter", booth: "H17", x: 86, y: 84 },
+    // CityCube A / CCA EG
+    { id: "s-acer-cca", hallId: "citycube-a", name: "Acer Inc.", booth: "CCBA-A5", x: 28, y: 24 },
+    { id: "s-cca-a4", hallId: "citycube-a", name: "CCBA-A4", booth: "CCBA-A4", x: 50, y: 24 },
+    { id: "s-cca-a3", hallId: "citycube-a", name: "CCBA-A3", booth: "CCBA-A3", x: 66, y: 24 },
+    { id: "s-cca-a1", hallId: "citycube-a", name: "CCBA-A1", booth: "CCBA-A1", x: 86, y: 22 },
+    { id: "s-innovation-stage", hallId: "citycube-a", name: "Innovation Stage", booth: "CCA", x: 30, y: 62 },
+    { id: "s-cca-a8", hallId: "citycube-a", name: "CCBA-A8", booth: "CCBA-A8", x: 62, y: 62 }
   ]
 };
 
