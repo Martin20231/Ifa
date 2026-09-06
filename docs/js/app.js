@@ -441,19 +441,27 @@
     IFAGps.start(onGpsUpdate);
   }
 
+  function goSearch(focusInput) {
+    tab = "search";
+    document.querySelectorAll(".tab").forEach(function (b) {
+      b.classList.toggle("active", b.getAttribute("data-tab") === "search");
+    });
+    render();
+    try { window.scrollTo(0, 0); } catch (e) {}
+    if (focusInput === false) return;
+    setTimeout(function () {
+      var input = document.getElementById("searchInput");
+      if (input) input.focus();
+    }, 30);
+  }
+
   function renderMap() {
     els.title.textContent = "Lageplan";
     els.actions.innerHTML =
       '<button type="button" class="icon-chip" id="quickSearch">Suche</button>' +
       '<button type="button" class="icon-chip" id="quickQr">QR</button>';
     els.actions.querySelector("#quickSearch").onclick = function () {
-      tab = "search";
-      document.querySelectorAll(".tab").forEach(function (b) {
-        b.classList.toggle("active", b.getAttribute("data-tab") === "search");
-      });
-      render();
-      var input = document.getElementById("searchInput");
-      if (input) input.focus();
+      goSearch(true);
     };
     els.actions.querySelector("#quickQr").onclick = function () { startScan(null); };
 
@@ -660,10 +668,10 @@
         hallHits.map(function (h) {
           return '<button type="button" class="search-row" data-hall="' + h.id + '">' +
             '<span class="rail" style="background:' + escAttr(h.color || catColor(h.category)) + '"></span>' +
-            "<div><strong>" + esc(h.name) + "</strong><span>" +
+            '<span class="search-copy"><strong>' + esc(h.name) + "</strong><span>" +
             esc(catLabel(h.category)) + " · " + (h.floor === 2 ? "OG" : "EG") +
             (h.hints ? " · " + esc(h.hints) : "") +
-            "</span></div></button>";
+            "</span></span></button>";
         }).join("") + "</div></div>" : "") +
       '<div class="search-list">' +
       (shown.length ? shown.map(function (s) {
@@ -671,27 +679,45 @@
         var visited = state.standVisits[s.id] && state.standVisits[s.id].visited;
         return '<button type="button" class="search-row" data-stand="' + s.id + '">' +
           '<span class="rail" style="background:' + escAttr(h.color || catColor(h.category)) + '"></span>' +
-          "<div><strong>" + esc(s.name) + "</strong><span>" +
+          '<span class="search-copy"><strong>' + esc(s.name) + "</strong><span>" +
           esc(h.name || s.hallId) + (s.booth ? " · " + esc(s.booth) : "") +
           (visited ? " · besucht" : "") +
           (state.bookmarks[s.id] ? " · gemerkt" : "") +
-          "</span></div>" +
+          "</span></span>" +
           '<span class="go">' + esc(h.shortCode || "") + "</span></button>";
       }).join("") :
         '<div class="empty">Tipp: „Audio“, „DJI“ oder „H2.2“ eingeben</div>') +
       "</div>";
 
-    var input = els.main.querySelector("#searchInput");
-    input.oninput = function (e) {
-      query = e.target.value;
+    function refreshSearchKeepCaret() {
       renderSearch();
       var again = document.getElementById("searchInput");
       if (again) {
         again.focus();
         var len = again.value.length;
-        again.setSelectionRange(len, len);
+        try { again.setSelectionRange(len, len); } catch (e2) {}
       }
-    };
+    }
+
+    var input = els.main.querySelector("#searchInput");
+    if (input) {
+      input.oninput = function (e) {
+        query = e.target.value;
+        refreshSearchKeepCaret();
+      };
+      // iOS/Android: Tastatur-Taste „Suche“ feuert search, nicht immer input
+      input.addEventListener("search", function () {
+        query = input.value;
+        refreshSearchKeepCaret();
+      });
+      input.addEventListener("keydown", function (e) {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          query = input.value;
+          refreshSearchKeepCaret();
+        }
+      });
+    }
     els.main.querySelectorAll("[data-cat]").forEach(function (btn) {
       btn.onclick = function () {
         categoryFilter = btn.getAttribute("data-cat") || "";
@@ -743,18 +769,20 @@
   document.querySelectorAll(".tab").forEach(function (btn) {
     btn.addEventListener("click", function () {
       var t = btn.getAttribute("data-tab");
+      if (t === "search") {
+        goSearch(true);
+        return;
+      }
       if (t === "stats") tab = "history";
-      else if (t === "search") tab = "search";
       else tab = "map";
       document.querySelectorAll(".tab").forEach(function (b) {
         b.classList.toggle("active", b === btn);
       });
-      if (tab !== "search") {
-        query = "";
-        categoryFilter = "";
-        floorFilter = 0;
-      }
+      query = "";
+      categoryFilter = "";
+      floorFilter = 0;
       render();
+      try { window.scrollTo(0, 0); } catch (e) {}
     });
   });
 
