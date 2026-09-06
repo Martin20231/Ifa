@@ -63,7 +63,7 @@ window.IFA_SITE = {
     { id: "12", name: "Halle 12", shortCode: "12", area: "Nordost", floor: 1, category: "beauty", x: 86, y: 38, w: 9, h: 8, neighbors: ["11.1", "13"], hints: "BODYFRIEND, Therabody, Hyperice, Renpho" },
     { id: "13", name: "Halle 13", shortCode: "13", area: "Nordost", floor: 1, category: "beauty", x: 86, y: 28, w: 9, h: 8, neighbors: ["12", "14"], hints: "Beauty Hub, TYMO, Withings" },
     { id: "14", name: "Halle 14", shortCode: "14", area: "Nordost", floor: 1, category: "beauty", x: 86, y: 18, w: 9, h: 8, neighbors: ["13", "15"], hints: "Bixdo, Bebird, Lovense, Nekteck" },
-    { id: "15", name: "Halle 15", shortCode: "15", area: "Nordost", floor: 1, category: "beauty", x: 86, y: 8, w: 9, h: 8, neighbors: ["14", "16"] },
+    { id: "15", name: "Halle 15", shortCode: "15", area: "Nordost", floor: 1, category: "beauty", x: 86, y: 8, w: 9, h: 8, neighbors: ["14", "16"], hints: "YA-MAN, MERACH, Naipo, Roborock, Pongbot" },
 
     // —— Nordost: Funkturm / IFA Next ——
     { id: "16", name: "Halle 16", shortCode: "16", area: "Nord", floor: 1, category: "next", x: 72, y: 8, w: 11, h: 8, neighbors: ["15", "17"] },
@@ -305,6 +305,29 @@ window.IFA_SITE = {
     { id: "s-apiyoo", hallId: "14", name: "Apiyoo", booth: "H14", x: 18, y: 52 },
     { id: "s-seago", hallId: "14", name: "Seago", booth: "H14", x: 18, y: 68 },
     { id: "s-amory", hallId: "14", name: "Amory", booth: "H14", x: 78, y: 68 },
+    // Halle 15 – Beauty / Fitness
+    { id: "s-h15-119", hallId: "15", name: "H15-119", booth: "H15-119", x: 18, y: 10 },
+    { id: "s-viveo", hallId: "15", name: "Viveo", booth: "H15", x: 52, y: 10 },
+    { id: "s-fitrx", hallId: "15", name: "FitRx", booth: "H15", x: 72, y: 10 },
+    { id: "s-yaman", hallId: "15", name: "YA-MAN", booth: "H15", x: 18, y: 22 },
+    { id: "s-roboc", hallId: "15", name: "RoboC", booth: "H15-121", x: 48, y: 26 },
+    { id: "s-target15", hallId: "15", name: "Target", booth: "H15", x: 28, y: 28 },
+    { id: "s-fitnex", hallId: "15", name: "Fitnex", booth: "H15", x: 78, y: 26 },
+    { id: "s-nodor", hallId: "15", name: "Nodor", booth: "H15-123", x: 48, y: 42 },
+    { id: "s-bob15", hallId: "15", name: "Bob", booth: "H15", x: 78, y: 42 },
+    { id: "s-merach", hallId: "15", name: "MERACH", booth: "H15-125", x: 48, y: 56 },
+    { id: "s-naipo", hallId: "15", name: "Naipo", booth: "H15", x: 18, y: 56 },
+    { id: "s-ultra15", hallId: "15", name: "Ultra", booth: "H15", x: 78, y: 56 },
+    { id: "s-wavytalk", hallId: "15", name: "Wavytalk", booth: "H15", x: 48, y: 68 },
+    { id: "s-dnsys", hallId: "15", name: "DNSYS", booth: "H15", x: 18, y: 68 },
+    { id: "s-boos", hallId: "15", name: "Boos", booth: "H15", x: 78, y: 68 },
+    { id: "s-tennix", hallId: "15", name: "Tennix", booth: "H15", x: 48, y: 78 },
+    { id: "s-odyss", hallId: "15", name: "Odyss", booth: "H15", x: 18, y: 78 },
+    { id: "s-maxg", hallId: "15", name: "Maxg", booth: "H15", x: 78, y: 78 },
+    { id: "s-pongbot", hallId: "15", name: "Pongbot", booth: "H15", x: 40, y: 88 },
+    { id: "s-ivismil", hallId: "15", name: "Ivismil", booth: "H15", x: 18, y: 88 },
+    { id: "s-mynextr", hallId: "15", name: "MYnextR / Fitcare", booth: "H15", x: 68, y: 88 },
+    { id: "s-quas", hallId: "15", name: "Quas", booth: "H15", x: 88, y: 88 },
     // Weitere
     { id: "s-tiktok", hallId: "17", name: "TikTok", booth: "H17-200", x: 45, y: 40 },
     { id: "s-prusa", hallId: "17", name: "Prusa Research", booth: "H17-215", x: 70, y: 55 }
