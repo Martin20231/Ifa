@@ -4,6 +4,18 @@ Privates Messetagebuch für die **IFA Berlin** – SwiftUI + SwiftData, iOS 17+,
 
 ## Funktionen
 
+## Web-App (iPhone ohne Xcode)
+
+Die App läuft auch als **Website** (GitHub Pages) – ideal fürs iPhone:
+
+**https://martin20231.github.io/Ifa/**
+
+1. Link im Safari öffnen  
+2. Teilen → **Zum Home-Bildschirm** (optional, wie eine App)  
+3. Check-ins, Notizen und Fotos bleiben **lokal im Browser** gespeichert  
+
+Quellcode der Web-Version: Ordner `docs/`
+
 - **Hallen-Übersicht** als Liste (nach Bereich gruppiert) oder interaktives **Grundriss-Grid**
 - **1-Tap-Check-in** (Liste: Plus-Button; Grid: langer Druck)
 - **Detail pro Halle:** Hersteller/Stände, Notizen, Fotos via `PhotosPicker` (lokal gespeichert)

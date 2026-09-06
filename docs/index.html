@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b1210" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="description" content="Privates IFA Berlin Messetagebuch" />
+  <title>IFA Tagebuch</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="stylesheet" href="css/app.css" />
+</head>
+<body>
+  <div id="app">
+    <header class="topbar">
+      <div>
+        <p class="brand">IFA Tagebuch</p>
+        <h1 id="screenTitle">Hallen</h1>
+      </div>
+      <div class="topbar-actions" id="topbarActions"></div>
+    </header>
+
+    <section class="progress-card" id="progressCard"></section>
+    <main id="main"></main>
+
+    <nav class="tabbar">
+      <button type="button" class="tab active" data-tab="halls">
+        <span class="tab-icon">▦</span>Hallen
+      </button>
+      <button type="button" class="tab" data-tab="stats">
+        <span class="tab-icon">▣</span>Verlauf
+      </button>
+    </nav>
+  </div>
+
+  <dialog id="detailDialog" class="sheet">
+    <div class="sheet-inner">
+      <header class="sheet-header">
+        <button type="button" class="text-btn" id="detailClose">Schließen</button>
+        <strong id="detailTitle">Halle</strong>
+        <button type="button" class="text-btn accent" id="detailSave">Sichern</button>
+      </header>
+      <div class="sheet-body" id="detailBody"></div>
+    </div>
+  </dialog>
+
+  <script src="js/halls.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
