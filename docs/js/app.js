@@ -9,10 +9,31 @@
   var navTo = "";
   var pathIds = [];
   var query = "";
+  var categoryFilter = "";
+  var floorFilter = 0; // 0 = alle, 1 = EG, 2 = OG
   var draft = null;
   var geoPos = null;
   var geoStatus = "";
   var geoSaveTimer = null;
+
+  var CAT_ORDER = [
+    "appliances", "smartHome", "connectivity", "computing", "audio", "beauty",
+    "entertainment", "content", "next", "mobility", "global", "outdoor"
+  ];
+  var CAT_LABELS = {
+    appliances: "Hausgeräte",
+    smartHome: "Smart Home",
+    connectivity: "Kommunikation",
+    computing: "Computing",
+    audio: "Audio",
+    beauty: "Beauty Tech",
+    entertainment: "Entertainment",
+    content: "Content",
+    next: "IFA Next",
+    mobility: "Mobility",
+    global: "Global Markets",
+    outdoor: "Outdoor"
+  };
 
   var els = {
     title: document.getElementById("screenTitle"),
@@ -422,7 +443,18 @@
 
   function renderMap() {
     els.title.textContent = "Lageplan";
-    els.actions.innerHTML = '<button type="button" class="icon-chip" id="quickQr">QR</button>';
+    els.actions.innerHTML =
+      '<button type="button" class="icon-chip" id="quickSearch">Suche</button>' +
+      '<button type="button" class="icon-chip" id="quickQr">QR</button>';
+    els.actions.querySelector("#quickSearch").onclick = function () {
+      tab = "search";
+      document.querySelectorAll(".tab").forEach(function (b) {
+        b.classList.toggle("active", b.getAttribute("data-tab") === "search");
+      });
+      render();
+      var input = document.getElementById("searchInput");
+      if (input) input.focus();
+    };
     els.actions.querySelector("#quickQr").onclick = function () { startScan(null); };
 
     var opts = '<option value="">Halle…</option>' + halls().map(function (h) {
@@ -529,6 +561,152 @@
     bind(els.main);
   }
 
+  function catLabel(id) {
+    var cat = (window.IFA_CATEGORIES || {})[id];
+    return CAT_LABELS[id] || (cat && cat.name) || id;
+  }
+
+  function catColor(id) {
+    var cat = (window.IFA_CATEGORIES || {})[id];
+    return (cat && cat.color) || "#64748b";
+  }
+
+  function norm(s) {
+    return String(s || "").toLowerCase()
+      .replace(/ä/g, "ae").replace(/ö/g, "oe").replace(/ü/g, "ue").replace(/ß/g, "ss");
+  }
+
+  function standMatches(s, h, q) {
+    if (!q) return true;
+    // Nur Stand + Halle/Code/Kategorie – nicht die Hallen-Hints (sonst matcht z. B. „Edifier“ alle Nachbarn)
+    var hay = [
+      s.name, s.booth,
+      h && h.name, h && h.shortCode, h && h.area,
+      h && h.category, h && catLabel(h.category)
+    ].map(norm).join(" ");
+    return q.split(/\s+/).every(function (part) {
+      return part && hay.indexOf(part) !== -1;
+    });
+  }
+
+  function filteredStands() {
+    var q = norm(query.trim());
+    return stands().filter(function (s) {
+      var h = hall(s.hallId);
+      if (!h) return false;
+      if (categoryFilter && h.category !== categoryFilter) return false;
+      if (floorFilter && h.floor !== floorFilter) return false;
+      return standMatches(s, h, q);
+    }).sort(function (a, b) {
+      return String(a.name).localeCompare(String(b.name), "de");
+    });
+  }
+
+  function filteredHalls() {
+    var q = norm(query.trim());
+    return halls().filter(function (h) {
+      if (categoryFilter && h.category !== categoryFilter) return false;
+      if (floorFilter && h.floor !== floorFilter) return false;
+      if (!q) return !!categoryFilter;
+      var hay = [h.name, h.shortCode, h.hints, h.area, h.category, catLabel(h.category)]
+        .map(norm).join(" ");
+      return q.split(/\s+/).every(function (part) {
+        return part && hay.indexOf(part) !== -1;
+      });
+    }).sort(function (a, b) {
+      return String(a.name).localeCompare(String(b.name), "de");
+    });
+  }
+
+  function renderSearch() {
+    els.title.textContent = "Suche";
+    els.actions.innerHTML = "";
+
+    var list = filteredStands();
+    var hallHits = filteredHalls().slice(0, 8);
+    var shown = list.slice(0, 80);
+    var cats = CAT_ORDER.filter(function (id) {
+      return (window.IFA_CATEGORIES || {})[id];
+    });
+
+    els.main.innerHTML =
+      '<input class="search" id="searchInput" type="search" enterkeyhint="search" ' +
+      'placeholder="Aussteller, Standnr., Halle…" value="' + escAttr(query) + '" />' +
+      '<div class="cat-scroll" id="catScroll">' +
+      '<button type="button" class="cat-chip' + (!categoryFilter ? " active" : "") +
+      '" data-cat="">Alle</button>' +
+      cats.map(function (id) {
+        return '<button type="button" class="cat-chip' + (categoryFilter === id ? " active" : "") +
+          '" data-cat="' + id + '" style="color:' + catColor(id) + '">' +
+          '<span class="dot"></span>' + esc(catLabel(id)) + "</button>";
+      }).join("") +
+      "</div>" +
+      '<div class="floor-chips">' +
+      '<button type="button" class="floor-chip' + (floorFilter === 0 ? " active" : "") +
+      '" data-floor="0">Alle Ebenen</button>' +
+      '<button type="button" class="floor-chip' + (floorFilter === 1 ? " active" : "") +
+      '" data-floor="1">EG</button>' +
+      '<button type="button" class="floor-chip' + (floorFilter === 2 ? " active" : "") +
+      '" data-floor="2">OG</button>' +
+      "</div>" +
+      '<div class="search-meta"><span>' +
+      (list.length ? list.length + (list.length === 1 ? " Aussteller" : " Aussteller") : "Keine Treffer") +
+      (list.length > shown.length ? " · Top " + shown.length : "") +
+      "</span><span>" +
+      (categoryFilter ? esc(catLabel(categoryFilter)) : "Alle Kategorien") +
+      "</span></div>" +
+      (hallHits.length ?
+        '<div class="hall-hit"><p class="section-title">Hallen</p><div class="search-list">' +
+        hallHits.map(function (h) {
+          return '<button type="button" class="search-row" data-hall="' + h.id + '">' +
+            '<span class="rail" style="background:' + escAttr(h.color || catColor(h.category)) + '"></span>' +
+            "<div><strong>" + esc(h.name) + "</strong><span>" +
+            esc(catLabel(h.category)) + " · " + (h.floor === 2 ? "OG" : "EG") +
+            (h.hints ? " · " + esc(h.hints) : "") +
+            "</span></div></button>";
+        }).join("") + "</div></div>" : "") +
+      '<div class="search-list">' +
+      (shown.length ? shown.map(function (s) {
+        var h = hall(s.hallId) || {};
+        var visited = state.standVisits[s.id] && state.standVisits[s.id].visited;
+        return '<button type="button" class="search-row" data-stand="' + s.id + '">' +
+          '<span class="rail" style="background:' + escAttr(h.color || catColor(h.category)) + '"></span>' +
+          "<div><strong>" + esc(s.name) + "</strong><span>" +
+          esc(h.name || s.hallId) + (s.booth ? " · " + esc(s.booth) : "") +
+          (visited ? " · besucht" : "") +
+          (state.bookmarks[s.id] ? " · gemerkt" : "") +
+          "</span></div>" +
+          '<span class="go">' + esc(h.shortCode || "") + "</span></button>";
+      }).join("") :
+        '<div class="empty">Tipp: „Audio“, „DJI“ oder „H2.2“ eingeben</div>') +
+      "</div>";
+
+    var input = els.main.querySelector("#searchInput");
+    input.oninput = function (e) {
+      query = e.target.value;
+      renderSearch();
+      var again = document.getElementById("searchInput");
+      if (again) {
+        again.focus();
+        var len = again.value.length;
+        again.setSelectionRange(len, len);
+      }
+    };
+    els.main.querySelectorAll("[data-cat]").forEach(function (btn) {
+      btn.onclick = function () {
+        categoryFilter = btn.getAttribute("data-cat") || "";
+        renderSearch();
+      };
+    });
+    els.main.querySelectorAll("[data-floor]").forEach(function (btn) {
+      btn.onclick = function () {
+        floorFilter = Number(btn.getAttribute("data-floor")) || 0;
+        renderSearch();
+      };
+    });
+    bind(els.main);
+  }
+
   function renderHistory() {
     els.title.textContent = "Verlauf";
     els.actions.innerHTML = "";
@@ -558,17 +736,24 @@
     renderProgress();
     if (tab === "map") renderMap();
     else if (tab === "hall") renderHall();
+    else if (tab === "search") renderSearch();
     else renderHistory();
   }
 
   document.querySelectorAll(".tab").forEach(function (btn) {
     btn.addEventListener("click", function () {
       var t = btn.getAttribute("data-tab");
-      tab = t === "stats" ? "history" : "map";
+      if (t === "stats") tab = "history";
+      else if (t === "search") tab = "search";
+      else tab = "map";
       document.querySelectorAll(".tab").forEach(function (b) {
         b.classList.toggle("active", b === btn);
       });
-      query = "";
+      if (tab !== "search") {
+        query = "";
+        categoryFilter = "";
+        floorFilter = 0;
+      }
       render();
     });
   });
