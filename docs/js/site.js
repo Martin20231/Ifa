@@ -83,7 +83,7 @@ window.IFA_SITE = {
     // —— West: hub27, Next, Global Markets ——
     { id: "h27", name: "hub27", shortCode: "h27", area: "West", floor: 1, category: "entertainment", x: 2, y: 48, w: 10, h: 14, neighbors: ["23", "24", "25", "26", "5.1", "sg"], hints: "KOSATEC, Green Tech China, IT & Telecom" },
     { id: "24", name: "Halle 24", shortCode: "24", area: "West", floor: 1, category: "entertainment", x: 2, y: 36, w: 10, h: 8, neighbors: ["23", "25", "h27"], hints: "Reseller Park" },
-    { id: "25", name: "Halle 25", shortCode: "25", area: "West", floor: 1, category: "next", x: 2, y: 64, w: 10, h: 8, neighbors: ["24", "26", "h27"], hints: "Dream Stage · IFA Next" },
+    { id: "25", name: "Halle 25", shortCode: "25", area: "West", floor: 1, category: "next", x: 2, y: 64, w: 10, h: 8, neighbors: ["24", "26", "h27"], hints: "Dream Stage · IFA Lab · AGIBOT · Pudu Robotics" },
     { id: "26", name: "Halle 26", shortCode: "26", area: "West", floor: 1, category: "global", x: 2, y: 74, w: 10, h: 10, neighbors: ["25", "h27", "1.1"], hints: "IFA Global Markets B2B" },
 
     // —— Mitte ——
@@ -483,6 +483,42 @@ window.IFA_SITE = {
     { id: "s-minisforum", hallId: "6.2", name: "Minisforum", booth: "H6.2", x: 42, y: 30 },
     { id: "s-h62-20ex", hallId: "6.2", name: "20 Exhibitors", booth: "H6.2-2", x: 28, y: 52 },
 
+
+
+    // Halle 25 – IFA Next / Robotics / Startups
+    { id: "s-dream-stage", hallId: "25", name: "Dream Stage", booth: "H25", x: 18, y: 42 },
+    { id: "s-ifa-lab", hallId: "25", name: "IFA Lab", booth: "H25", x: 18, y: 72 },
+    { id: "s-agibot", hallId: "25", name: "AGIBOT", booth: "H25-371", x: 48, y: 78 },
+    { id: "s-pudu", hallId: "25", name: "Pudu Robotics", booth: "H25-354", x: 48, y: 42 },
+    { id: "s-booster-robotics", hallId: "25", name: "Booster Robotics", booth: "H25-343", x: 28, y: 22 },
+    { id: "s-h25-341", hallId: "25", name: "11 Exhibitors – Taiwan Startups", booth: "H25-341", x: 22, y: 12 },
+    { id: "s-h25-339", hallId: "25", name: "5 Exhibitors – Pohang City", booth: "H25-339", x: 48, y: 12 },
+    { id: "s-h25-346", hallId: "25", name: "5 Exhibitors – Singapore", booth: "H25-346", x: 48, y: 24 },
+    { id: "s-h25-361", hallId: "25", name: "22 Exhibitors – KITA", booth: "H25-361", x: 42, y: 58 },
+    { id: "s-h25-369", hallId: "25", name: "10 Exhibitors", booth: "H25-369", x: 28, y: 52 },
+    { id: "s-h25-36-8ex", hallId: "25", name: "8 Exhibitors / INDIEGOGO", booth: "H25-36", x: 18, y: 52 },
+    { id: "s-h25-10ex-r", hallId: "25", name: "10 Exhibitors", booth: "H25", x: 88, y: 48 },
+    { id: "s-h25-15ex", hallId: "25", name: "15 Exhibitors", booth: "H25", x: 78, y: 84 },
+    { id: "s-h25-12ex", hallId: "25", name: "12 Exhibitors", booth: "H25", x: 68, y: 58 },
+    { id: "s-engineai", hallId: "25", name: "EngineAI R", booth: "H25", x: 68, y: 42 },
+    { id: "s-winchain", hallId: "25", name: "Winchain Group", booth: "H25", x: 72, y: 28 },
+    { id: "s-bleeq", hallId: "25", name: "BleeQu", booth: "H25", x: 72, y: 18 },
+    { id: "s-unixai", hallId: "25", name: "Unix AI", booth: "H25", x: 84, y: 22 },
+    { id: "s-repartly", hallId: "25", name: "Repartly G", booth: "H25", x: 72, y: 52 },
+    { id: "s-aoseed", hallId: "25", name: "AOSEED", booth: "H25", x: 72, y: 10 },
+    { id: "s-aeroband", hallId: "25", name: "Aeroband – DALE", booth: "H25", x: 84, y: 10 },
+    { id: "s-windbill", hallId: "25", name: "Windbill", booth: "H25", x: 62, y: 10 },
+    { id: "s-astrall", hallId: "25", name: "Astrall", booth: "H25", x: 8, y: 42 },
+    { id: "s-ocoopa", hallId: "25", name: "Ocoopa", booth: "H25", x: 8, y: 58 },
+    { id: "s-noima", hallId: "25", name: "Noima U", booth: "H25", x: 68, y: 78 },
+    { id: "s-vigx", hallId: "25", name: "VIGX", booth: "H25", x: 62, y: 42 },
+    { id: "s-circular", hallId: "25", name: "Circular", booth: "H25", x: 22, y: 32 },
+    { id: "s-udexreal", hallId: "25", name: "Udexreal", booth: "H25", x: 36, y: 32 },
+    { id: "s-bluetex", hallId: "25", name: "BLUETEX", booth: "H25", x: 50, y: 32 },
+    { id: "s-makerzoid", hallId: "25", name: "Makerzoid", booth: "H25", x: 62, y: 32 },
+    { id: "s-metismotion", hallId: "25", name: "MetisMotion", booth: "H25", x: 36, y: 48 },
+    { id: "s-airinum", hallId: "25", name: "Airinum", booth: "H25", x: 58, y: 68 },
+    { id: "s-alganize", hallId: "25", name: "Alganize", booth: "H25", x: 72, y: 68 },
 
     // Halle 7.2b – Peripherals / Maker
     { id: "s-akkog", hallId: "7.2b", name: "Akkog", booth: "H7.2b", x: 12, y: 28 },
