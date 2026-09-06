@@ -11,6 +11,8 @@
   var query = "";
   var categoryFilter = "";
   var floorFilter = 0; // 0 = alle, 1 = EG, 2 = OG
+  var unvisitedOnly = false;
+  var offlineReady = false;
   var draft = null;
   var geoPos = null;
   var geoStatus = "";
@@ -50,6 +52,136 @@
   };
 
   function persist() { IFAStorage.save(state); }
+
+  function ensureVisit(standId) {
+    if (!state.standVisits[standId]) {
+      state.standVisits[standId] = {
+        visited: false,
+        notes: "",
+        photos: [],
+        via: "",
+        checkedInAt: null
+      };
+    }
+    if (!Array.isArray(state.standVisits[standId].photos)) {
+      state.standVisits[standId].photos = [];
+    }
+    return state.standVisits[standId];
+  }
+
+  function compressImage(file, done) {
+    var reader = new FileReader();
+    reader.onerror = function () { done(null); };
+    reader.onload = function () {
+      var img = new Image();
+      img.onerror = function () { done(null); };
+      img.onload = function () {
+        var max = 960;
+        var scale = Math.min(1, max / Math.max(img.width || 1, img.height || 1));
+        var canvas = document.createElement("canvas");
+        canvas.width = Math.max(1, Math.round((img.width || 1) * scale));
+        canvas.height = Math.max(1, Math.round((img.height || 1) * scale));
+        var ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        try {
+          done(canvas.toDataURL("image/jpeg", 0.72));
+        } catch (e) {
+          done(null);
+        }
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function downloadText(filename, text, mime) {
+    var blob = new Blob([text], { type: mime || "text/plain;charset=utf-8" });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(function () {
+      URL.revokeObjectURL(url);
+      a.remove();
+    }, 500);
+  }
+
+  function csvEscape(value) {
+    var s = String(value == null ? "" : value);
+    if (/[",\n\r]/.test(s)) return '"' + s.replace(/"/g, '""') + '"';
+    return s;
+  }
+
+  function buildExportRows() {
+    var rows = [];
+    stands().forEach(function (s) {
+      var v = state.standVisits[s.id] || {};
+      var book = !!state.bookmarks[s.id];
+      if (!v.visited && !book && !(v.notes || (v.photos && v.photos.length))) return;
+      var h = hall(s.hallId) || {};
+      rows.push({
+        name: s.name,
+        booth: s.booth || "",
+        hall: h.name || s.hallId,
+        hallCode: h.shortCode || "",
+        visited: v.visited ? "ja" : "nein",
+        bookmarked: book ? "ja" : "nein",
+        checkedInAt: v.checkedInAt || "",
+        via: v.via || "",
+        notes: v.notes || "",
+        photos: Array.isArray(v.photos) ? v.photos.length : 0
+      });
+    });
+    rows.sort(function (a, b) {
+      return String(a.name).localeCompare(String(b.name), "de");
+    });
+    return rows;
+  }
+
+  function exportDiary(format) {
+    var rows = buildExportRows();
+    var stamp = new Date().toISOString().slice(0, 10);
+    if (!rows.length) {
+      alert("Noch nichts zum Exportieren (Merkliste, Besuche oder Notizen).");
+      return;
+    }
+    if (format === "csv") {
+      var header = ["Name", "Standnr", "Halle", "Hallen-Code", "Besucht", "Gemerkt", "Check-in", "Via", "Notizen", "Fotos"];
+      var lines = [header.join(",")].concat(rows.map(function (r) {
+        return [
+          csvEscape(r.name), csvEscape(r.booth), csvEscape(r.hall), csvEscape(r.hallCode),
+          csvEscape(r.visited), csvEscape(r.bookmarked), csvEscape(r.checkedInAt),
+          csvEscape(r.via), csvEscape(r.notes), csvEscape(r.photos)
+        ].join(",");
+      }));
+      downloadText("ifa-tagebuch-" + stamp + ".csv", lines.join("\n"), "text/csv;charset=utf-8");
+      return;
+    }
+    var text = "IFA Tagebuch Export (" + stamp + ")\n" +
+      "====================================\n\n";
+    rows.forEach(function (r) {
+      text += r.name + "\n";
+      text += "  Halle: " + r.hall + (r.hallCode ? " (" + r.hallCode + ")" : "") + "\n";
+      if (r.booth) text += "  Stand: " + r.booth + "\n";
+      text += "  Besucht: " + r.visited + " · Gemerkt: " + r.bookmarked + "\n";
+      if (r.checkedInAt) text += "  Check-in: " + r.checkedInAt + (r.via ? " (" + r.via + ")" : "") + "\n";
+      if (r.notes) text += "  Notiz: " + r.notes + "\n";
+      if (r.photos) text += "  Fotos: " + r.photos + "\n";
+      text += "\n";
+    });
+    var events = state.events || [];
+    if (events.length) {
+      text += "Timeline\n--------\n";
+      events.slice(0, 100).forEach(function (ev) {
+        text += (ev.timestamp || "") + " · " + (ev.kind || "") + " · " +
+          (ev.standName || ev.hallName || "") + "\n";
+      });
+    }
+    downloadText("ifa-tagebuch-" + stamp + ".txt", text, "text/plain;charset=utf-8");
+  }
+
 
   function esc(s) {
     return String(s == null ? "" : s)
@@ -228,11 +360,12 @@
   function openStandSheet(standId) {
     var s = stand(standId);
     if (!s) return;
-    var visit = state.standVisits[standId] || {};
+    var visit = ensureVisit(standId);
     var h = hall(s.hallId);
     draft = null;
     els.detailTitle.textContent = s.name;
     els.detailSave.classList.add("hidden");
+    var photos = visit.photos || [];
     els.detailBody.innerHTML =
       '<div class="status-pill ' + (visit.visited ? "on" : "") + '">' +
       (visit.visited ? "Besucht" : "Nicht besucht") +
@@ -240,8 +373,14 @@
       (visit.via === "qr" ? " · QR" : visit.via === "manual" ? " · manuell" : "") +
       "</div>" +
       '<p class="muted">' + esc(h ? h.name : s.hallId) + (s.booth ? " · " + esc(s.booth) : "") + "</p>" +
-      (visit.notes ? "<p>" + esc(visit.notes) + "</p>" : "") +
-      '<button type="button" class="primary-btn" id="btnNav">Route zum Stand</button>' +
+      (visit.notes ? '<div class="note-block"><p class="section-title" style="margin:0 0 6px">Notiz</p><p>' + esc(visit.notes) + "</p></div>" : "") +
+      (photos.length ?
+        '<div class="photo-grid">' + photos.map(function (src, idx) {
+          return '<button type="button" class="photo-thumb" data-photo="' + idx + '">' +
+            '<img src="' + src + '" alt="Foto ' + (idx + 1) + '" /></button>';
+        }).join("") + "</div>" : "") +
+      '<button type="button" class="primary-btn" id="btnNotes">Notiz & Fotos</button>' +
+      '<button type="button" class="secondary-btn" id="btnNav">Route zum Stand</button>' +
       '<button type="button" class="secondary-btn" id="btnHallNav">In Halle zeigen</button>' +
       '<button type="button" class="secondary-btn" id="btnQr">QR-Code scannen</button>' +
       '<button type="button" class="secondary-btn" id="btnManual">Manuell eintragen (ohne QR)</button>' +
@@ -249,6 +388,18 @@
       (state.bookmarks[standId] ? "Von Merkliste nehmen" : "Auf Merkliste") + "</button>" +
       (visit.visited ? '<button type="button" class="danger-btn" id="btnReset">Besuch löschen</button>' : "");
 
+    els.detailBody.querySelector("#btnNotes").onclick = function () {
+      openForm({
+        standId: standId,
+        name: s.name,
+        booth: s.booth || "",
+        hallId: s.hallId,
+        via: visit.via || "manual",
+        notes: visit.notes || "",
+        photos: (visit.photos || []).slice(),
+        notesOnly: !visit.visited
+      });
+    };
     els.detailBody.querySelector("#btnNav").onclick = function () {
       closeDialog();
       navigateToStand(standId, false);
@@ -259,7 +410,15 @@
     };
     els.detailBody.querySelector("#btnQr").onclick = function () { startScan(standId); };
     els.detailBody.querySelector("#btnManual").onclick = function () {
-      openForm({ standId: standId, name: s.name, booth: s.booth || "", hallId: s.hallId, via: "manual" });
+      openForm({
+        standId: standId,
+        name: s.name,
+        booth: s.booth || "",
+        hallId: s.hallId,
+        via: "manual",
+        notes: visit.notes || "",
+        photos: (visit.photos || []).slice()
+      });
     };
     els.detailBody.querySelector("#btnBook").onclick = function () {
       if (state.bookmarks[standId]) delete state.bookmarks[standId];
@@ -274,38 +433,93 @@
       openStandSheet(standId);
       render();
     };
+    els.detailBody.querySelectorAll("[data-photo]").forEach(function (btn) {
+      btn.onclick = function () {
+        var idx = Number(btn.getAttribute("data-photo"));
+        var src = photos[idx];
+        if (!src) return;
+        els.detailTitle.textContent = "Foto";
+        els.detailSave.classList.add("hidden");
+        els.detailBody.innerHTML =
+          '<img class="photo-full" src="' + src + '" alt="Foto" />' +
+          '<button type="button" class="secondary-btn" id="btnBackPhoto">Zurück</button>' +
+          '<button type="button" class="danger-btn" id="btnDelPhoto">Foto löschen</button>';
+        els.detailBody.querySelector("#btnBackPhoto").onclick = function () { openStandSheet(standId); };
+        els.detailBody.querySelector("#btnDelPhoto").onclick = function () {
+          var v = ensureVisit(standId);
+          v.photos.splice(idx, 1);
+          persist();
+          openStandSheet(standId);
+        };
+      };
+    });
     openDialog();
   }
 
   function openForm(data) {
+    var existing = data.standId ? (state.standVisits[data.standId] || {}) : {};
     draft = {
       standId: data.standId || null,
       name: data.name || "",
       booth: data.booth || "",
       hallId: data.hallId || selectedHallId || "2.1",
-      notes: data.notes || "",
+      notes: data.notes != null ? data.notes : (existing.notes || ""),
+      photos: Array.isArray(data.photos) ? data.photos.slice() : (Array.isArray(existing.photos) ? existing.photos.slice() : []),
       via: data.via || "manual",
-      qrPayload: data.qrPayload || ""
+      qrPayload: data.qrPayload || "",
+      notesOnly: !!data.notesOnly
     };
-    els.detailTitle.textContent = draft.standId ? "Stand besuchen" : "Neuer Stand";
+    els.detailTitle.textContent = draft.notesOnly ? "Notiz & Fotos" : (draft.standId ? "Stand besuchen" : "Neuer Stand");
     els.detailSave.classList.remove("hidden");
     els.detailSave.textContent = "Speichern";
-    els.detailBody.innerHTML =
-      (draft.qrPayload
-        ? '<div class="status-pill on">QR erkannt</div><p class="muted break">' + esc(draft.qrPayload) + "</p>"
-        : '<p class="muted">Kein QR vorhanden? Einfach manuell speichern.</p>') +
-      '<div class="field"><label for="fName">Hersteller / Stand</label>' +
-      '<input id="fName" value="' + escAttr(draft.name) + '" placeholder="z. B. Samsung" /></div>' +
-      '<div class="field"><label for="fBooth">Standnummer (optional)</label>' +
-      '<input id="fBooth" value="' + escAttr(draft.booth) + '" placeholder="H2.1-101" /></div>' +
-      '<div class="field"><label for="fHall">Halle</label><select id="fHall">' + hallOptions(draft.hallId) + "</select></div>" +
-      '<div class="field"><label for="fNotes">Notiz</label>' +
-      '<textarea id="fNotes" rows="4" placeholder="Was war interessant?">' + esc(draft.notes) + "</textarea></div>";
+    function paintForm() {
+      els.detailBody.innerHTML =
+        (draft.qrPayload
+          ? '<div class="status-pill on">QR erkannt</div><p class="muted break">' + esc(draft.qrPayload) + "</p>"
+          : (draft.notesOnly
+            ? '<p class="muted">Notizen und Fotos lokal speichern — auch offline.</p>'
+            : '<p class="muted">Kein QR vorhanden? Einfach manuell speichern.</p>')) +
+        '<div class="field"><label for="fName">Hersteller / Stand</label>' +
+        '<input id="fName" value="' + escAttr(draft.name) + '" placeholder="z. B. Samsung" /></div>' +
+        '<div class="field"><label for="fBooth">Standnummer (optional)</label>' +
+        '<input id="fBooth" value="' + escAttr(draft.booth) + '" placeholder="H2.1-101" /></div>' +
+        '<div class="field"><label for="fHall">Halle</label><select id="fHall">' + hallOptions(draft.hallId) + "</select></div>" +
+        '<div class="field"><label for="fNotes">Notiz</label>' +
+        '<textarea id="fNotes" rows="4" placeholder="Was war interessant?">' + esc(draft.notes) + "</textarea></div>" +
+        '<div class="field"><label>Fotos (max. 4)</label>' +
+        '<div class="photo-grid edit">' +
+        (draft.photos.map(function (src, idx) {
+          return '<div class="photo-thumb"><img src="' + src + '" alt="Foto" />' +
+            '<button type="button" class="photo-del" data-del-photo="' + idx + '">×</button></div>';
+        }).join("")) +
+        (draft.photos.length < 4
+          ? '<label class="photo-add">+ Foto<input id="fPhoto" type="file" accept="image/*" capture="environment" hidden /></label>'
+          : "") +
+        "</div></div>";
 
-    els.detailBody.querySelector("#fName").oninput = function (e) { draft.name = e.target.value; };
-    els.detailBody.querySelector("#fBooth").oninput = function (e) { draft.booth = e.target.value; };
-    els.detailBody.querySelector("#fHall").onchange = function (e) { draft.hallId = e.target.value; };
-    els.detailBody.querySelector("#fNotes").oninput = function (e) { draft.notes = e.target.value; };
+      els.detailBody.querySelector("#fName").oninput = function (e) { draft.name = e.target.value; };
+      els.detailBody.querySelector("#fBooth").oninput = function (e) { draft.booth = e.target.value; };
+      els.detailBody.querySelector("#fHall").onchange = function (e) { draft.hallId = e.target.value; };
+      els.detailBody.querySelector("#fNotes").oninput = function (e) { draft.notes = e.target.value; };
+      els.detailBody.querySelectorAll("[data-del-photo]").forEach(function (btn) {
+        btn.onclick = function () {
+          draft.photos.splice(Number(btn.getAttribute("data-del-photo")), 1);
+          paintForm();
+        };
+      });
+      var fileInput = els.detailBody.querySelector("#fPhoto");
+      if (fileInput) fileInput.onchange = function (e) {
+        var file = e.target.files && e.target.files[0];
+        if (!file) return;
+        compressImage(file, function (dataUrl) {
+          if (!dataUrl) { alert("Foto konnte nicht geladen werden."); return; }
+          if (draft.photos.length >= 4) return;
+          draft.photos.push(dataUrl);
+          paintForm();
+        });
+      };
+    }
+    paintForm();
     openDialog();
   }
 
@@ -335,24 +549,37 @@
       }
     }
 
+    var prev = state.standVisits[id] || {};
+    var nowIso = new Date().toISOString();
+    var markVisited = !draft.notesOnly || !!prev.visited;
     state.standVisits[id] = {
-      visited: true,
-      checkedInAt: new Date().toISOString(),
+      visited: markVisited ? true : !!prev.visited,
+      checkedInAt: markVisited ? (prev.checkedInAt || nowIso) : (prev.checkedInAt || null),
       notes: String(draft.notes || "").trim(),
-      via: draft.via || "manual",
-      qrPayload: draft.qrPayload || ""
+      photos: Array.isArray(draft.photos) ? draft.photos.slice(0, 4) : [],
+      via: draft.via || prev.via || "manual",
+      qrPayload: draft.qrPayload || prev.qrPayload || ""
     };
-    markHall(draft.hallId);
-    IFAStorage.addEvent(state, {
-      kind: draft.via === "qr" ? "standQr" : "standManual",
-      hallId: draft.hallId,
-      hallName: (hall(draft.hallId) || {}).name || draft.hallId,
-      standId: id,
-      standName: name
-    });
+    if (markVisited) {
+      markHall(draft.hallId);
+      if (!prev.visited) {
+        IFAStorage.addEvent(state, {
+          kind: draft.via === "qr" ? "standQr" : "standManual",
+          hallId: draft.hallId,
+          hallName: (hall(draft.hallId) || {}).name || draft.hallId,
+          standId: id,
+          standName: name
+        });
+      }
+    }
     persist();
     selectedHallId = draft.hallId;
     closeDialog();
+    if (draft.notesOnly) {
+      openStandSheet(id);
+      render();
+      return;
+    }
     tab = "hall";
     render();
   }
@@ -758,6 +985,10 @@
       if (!h) return false;
       if (categoryFilter && h.category !== categoryFilter) return false;
       if (floorFilter && h.floor !== floorFilter) return false;
+      if (unvisitedOnly) {
+        var v = state.standVisits[s.id];
+        if (v && v.visited) return false;
+      }
       return standMatches(s, h, q);
     }).sort(function (a, b) {
       return String(a.name).localeCompare(String(b.name), "de");
@@ -810,6 +1041,12 @@
       '" data-floor="1">EG</button>' +
       '<button type="button" class="floor-chip' + (floorFilter === 2 ? " active" : "") +
       '" data-floor="2">OG</button>' +
+      "</div>" +
+      '<div class="visit-chips">' +
+      '<button type="button" class="floor-chip' + (!unvisitedOnly ? " active" : "") +
+      '" data-visit="all">Alle Stände</button>' +
+      '<button type="button" class="floor-chip' + (unvisitedOnly ? " active" : "") +
+      '" data-visit="open">Noch nicht besucht</button>' +
       "</div>" +
       '<div class="search-meta"><span>' +
       (list.length ? list.length + (list.length === 1 ? " Aussteller" : " Aussteller") : "Keine Treffer") +
@@ -885,6 +1122,12 @@
         renderSearch();
       };
     });
+    els.main.querySelectorAll("[data-visit]").forEach(function (btn) {
+      btn.onclick = function () {
+        unvisitedOnly = btn.getAttribute("data-visit") === "open";
+        renderSearch();
+      };
+    });
     bind(els.main);
   }
 
@@ -893,12 +1136,33 @@
     els.actions.innerHTML = "";
     var bookmarked = stands().filter(function (s) { return state.bookmarks[s.id]; });
     var events = state.events || [];
+    var noted = stands().filter(function (s) {
+      var v = state.standVisits[s.id];
+      return v && ((v.notes && v.notes.trim()) || (v.photos && v.photos.length));
+    });
     els.main.innerHTML =
-      '<div class="stats-block"><h2 class="section-title" style="margin-top:0">Merkliste</h2>' +
+      '<div class="stats-block"><h2 class="section-title" style="margin-top:0">Export</h2>' +
+      '<p class="muted">Merkliste, Besuche und Notizen lokal als Datei sichern.</p>' +
+      '<div class="export-row">' +
+      '<button type="button" class="secondary-btn" id="btnExportTxt">Als Text</button>' +
+      '<button type="button" class="secondary-btn" id="btnExportCsv">Als CSV</button>' +
+      "</div>" +
+      (offlineReady
+        ? '<p class="muted offline-pill on">Offline bereit — Plan & Daten auch ohne Netz</p>'
+        : '<p class="muted offline-pill">Offline-Modus wird vorbereitet…</p>') +
+      '</div><div class="stats-block"><h2 class="section-title" style="margin-top:0">Merkliste</h2>' +
       (bookmarked.length ? bookmarked.map(function (s) {
         return '<button type="button" class="event-row" data-stand="' + s.id + '"><strong>' + esc(s.name) +
           '</strong><span class="muted">' + esc((hall(s.hallId) || {}).name || "") + "</span></button>";
       }).join("") : '<p class="muted">Noch nichts gemerkt</p>') +
+      '</div><div class="stats-block"><h2 class="section-title" style="margin-top:0">Notizen & Fotos</h2>' +
+      (noted.length ? noted.map(function (s) {
+        var v = state.standVisits[s.id] || {};
+        return '<button type="button" class="event-row" data-stand="' + s.id + '"><strong>' + esc(s.name) +
+          '</strong><span class="muted">' +
+          (v.notes ? esc(v.notes).slice(0, 80) : (v.photos && v.photos.length ? v.photos.length + " Foto(s)" : "")) +
+          "</span></button>";
+      }).join("") : '<p class="muted">Noch keine Notizen</p>') +
       '</div><div class="stats-block"><h2 class="section-title" style="margin-top:0">Timeline</h2>' +
       (events.length ? events.slice(0, 80).map(function (ev) {
         var label = ev.kind === "standQr" ? "QR-Check-in" :
@@ -910,6 +1174,8 @@
           '</strong><span class="muted">' + label + " · " + fmt(ev.timestamp) + "</span></button>";
       }).join("") : '<div class="empty">Noch keine Besuche</div>') +
       "</div>";
+    els.main.querySelector("#btnExportTxt").onclick = function () { exportDiary("txt"); };
+    els.main.querySelector("#btnExportCsv").onclick = function () { exportDiary("csv"); };
     bind(els.main);
   }
 
@@ -936,6 +1202,7 @@
       query = "";
       categoryFilter = "";
       floorFilter = 0;
+      unvisitedOnly = false;
       render();
       try { window.scrollTo(0, 0); } catch (e) {}
     });
@@ -944,6 +1211,17 @@
   els.detailClose.addEventListener("click", closeDialog);
   els.detailSave.addEventListener("click", saveForm);
   els.detailSave.classList.add("hidden");
+
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("./sw.js").then(function (reg) {
+      offlineReady = true;
+      if (tab === "history") render();
+      try { reg.update(); } catch (e) {}
+    }).catch(function () {
+      offlineReady = false;
+    });
+    if (navigator.serviceWorker.controller) offlineReady = true;
+  }
 
   render();
 })();

@@ -1,8 +1,9 @@
 {
   "name": "IFA Tagebuch",
   "short_name": "IFA",
-  "description": "Privates Messetagebuch für die IFA Berlin",
+  "description": "Privates Messetagebuch für die IFA Berlin – auch offline",
   "start_url": "./index.html",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#0b1210",
   "theme_color": "#0b1210",
