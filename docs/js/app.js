@@ -15,6 +15,8 @@
   var geoPos = null;
   var geoStatus = "";
   var geoSaveTimer = null;
+  var routeHint = "";
+  var focusStandId = null;
 
   var CAT_ORDER = [
     "appliances", "smartHome", "connectivity", "computing", "audio", "beauty",
@@ -136,6 +138,85 @@
     }).join("");
   }
 
+  function setPlanTabActive() {
+    document.querySelectorAll(".tab").forEach(function (b) {
+      b.classList.toggle("active", b.getAttribute("data-tab") === "halls");
+    });
+  }
+
+  function nearestHallId() {
+    if (!geoPos || typeof geoPos.x !== "number" || typeof geoPos.y !== "number") return "";
+    var best = "";
+    var bestD = Infinity;
+    halls().forEach(function (h) {
+      if (!h || h.mapRole === "park") return;
+      var cx = Number(h.x) + Number(h.w || 0) / 2;
+      var cy = Number(h.y) + Number(h.h || 0) / 2;
+      var dx = cx - geoPos.x;
+      var dy = cy - geoPos.y;
+      var d = dx * dx + dy * dy;
+      if (d < bestD) {
+        bestD = d;
+        best = h.id;
+      }
+    });
+    return best;
+  }
+
+  function hallLabel(id) {
+    var h = hall(id);
+    if (!h) return id || "";
+    return h.shortCode || h.name || id;
+  }
+
+  function navigateToHall(hallId, opts) {
+    opts = opts || {};
+    var target = hall(hallId);
+    if (!target) return;
+
+    var fromId = opts.fromId || navFrom || selectedHallId || nearestHallId() || "";
+    if (fromId === hallId) {
+      var alt = nearestHallId();
+      if (alt && alt !== hallId) fromId = alt;
+      else if (navFrom && navFrom !== hallId) fromId = navFrom;
+      else fromId = "";
+    }
+
+    selectedHallId = hallId;
+    navTo = hallId;
+    focusStandId = opts.standId || null;
+    routeHint = opts.label || (target.name + (target.shortCode ? " (" + target.shortCode + ")" : ""));
+
+    if (fromId && fromId !== hallId) {
+      navFrom = fromId;
+      pathIds = IFAMap.findPath(fromId, hallId) || [];
+    } else {
+      pathIds = hallId ? [hallId] : [];
+    }
+
+    if (target.floor === 2) IFAMap.setFloor("og");
+    else IFAMap.setFloor("eg");
+
+    setPlanTabActive();
+    tab = opts.openHall ? "hall" : "map";
+    render();
+    try { window.scrollTo(0, 0); } catch (e) {}
+  }
+
+  function navigateToStand(standId, openHall) {
+    var s = stand(standId);
+    if (!s) return;
+    var h = hall(s.hallId);
+    var label = s.name;
+    if (h) label += " · " + (h.shortCode || h.name);
+    if (s.booth) label += " · " + s.booth;
+    navigateToHall(s.hallId, {
+      standId: standId,
+      label: label,
+      openHall: !!openHall
+    });
+  }
+
   function openStandSheet(standId) {
     var s = stand(standId);
     if (!s) return;
@@ -152,12 +233,22 @@
       "</div>" +
       '<p class="muted">' + esc(h ? h.name : s.hallId) + (s.booth ? " · " + esc(s.booth) : "") + "</p>" +
       (visit.notes ? "<p>" + esc(visit.notes) + "</p>" : "") +
-      '<button type="button" class="primary-btn" id="btnQr">QR-Code scannen</button>' +
+      '<button type="button" class="primary-btn" id="btnNav">Route zum Stand</button>' +
+      '<button type="button" class="secondary-btn" id="btnHallNav">In Halle zeigen</button>' +
+      '<button type="button" class="secondary-btn" id="btnQr">QR-Code scannen</button>' +
       '<button type="button" class="secondary-btn" id="btnManual">Manuell eintragen (ohne QR)</button>' +
       '<button type="button" class="secondary-btn" id="btnBook">' +
       (state.bookmarks[standId] ? "Von Merkliste nehmen" : "Auf Merkliste") + "</button>" +
       (visit.visited ? '<button type="button" class="danger-btn" id="btnReset">Besuch löschen</button>' : "");
 
+    els.detailBody.querySelector("#btnNav").onclick = function () {
+      closeDialog();
+      navigateToStand(standId, false);
+    };
+    els.detailBody.querySelector("#btnHallNav").onclick = function () {
+      closeDialog();
+      navigateToStand(standId, true);
+    };
     els.detailBody.querySelector("#btnQr").onclick = function () { startScan(standId); };
     els.detailBody.querySelector("#btnManual").onclick = function () {
       openForm({ standId: standId, name: s.name, booth: s.booth || "", hallId: s.hallId, via: "manual" });
@@ -317,6 +408,20 @@
   }
 
   function bind(root) {
+    root.querySelectorAll("[data-nav-hall]").forEach(function (el) {
+      el.addEventListener("click", function (e) {
+        e.preventDefault();
+        var id = el.getAttribute("data-nav-hall");
+        var h = hall(id);
+        navigateToHall(id, { label: h ? h.name : id });
+      });
+    });
+    root.querySelectorAll("[data-nav-stand]").forEach(function (el) {
+      el.addEventListener("click", function (e) {
+        e.preventDefault();
+        navigateToStand(el.getAttribute("data-nav-stand"), false);
+      });
+    });
     root.querySelectorAll("[data-hall]").forEach(function (el) {
       el.addEventListener("click", function (e) {
         e.preventDefault();
@@ -472,9 +577,11 @@
     els.main.innerHTML =
       '<div class="map-card" id="mapCard"></div>' +
       '<div class="nav-card"><h2>Navigation</h2>' +
+      (routeHint ? '<p class="route-target"><strong>Ziel:</strong> ' + esc(routeHint) + "</p>" : "") +
       '<div class="nav-row"><label>Von</label><select id="navFrom">' + opts + "</select></div>" +
       '<div class="nav-row"><label>Nach</label><select id="navTo">' + opts + "</select></div>" +
       '<button type="button" class="primary-btn" id="btnRoute">Route zeigen</button>' +
+      (navTo ? '<button type="button" class="secondary-btn" id="btnOpenTarget">Zielhalle öffnen</button>' : "") +
       '<p class="muted" id="routeInfo"></p></div>' +
       '<button type="button" class="secondary-btn" id="btnNew">+ Stand ohne QR anlegen</button>';
 
@@ -487,22 +594,45 @@
     fromSel.onchange = function () { navFrom = fromSel.value; };
     toSel.onchange = function () { navTo = toSel.value; };
 
+    function paintRouteInfo() {
+      var info = els.main.querySelector("#routeInfo");
+      if (!info) return;
+      if (pathIds.length > 1) {
+        info.textContent = "Route: " + pathIds.map(hallLabel).join(" → ");
+      } else if (navTo && !navFrom) {
+        info.textContent = "Ziel gesetzt — bitte Start (Von) wählen oder GPS anschalten.";
+      } else if (navTo && pathIds.length === 1) {
+        info.textContent = "Du bist am Ziel / Start = Ziel.";
+      } else {
+        info.textContent = "";
+      }
+    }
+    paintRouteInfo();
+
     els.main.querySelector("#btnRoute").onclick = function () {
       navFrom = fromSel.value; navTo = toSel.value;
       if (!navFrom || !navTo) { alert("Start und Ziel wählen."); return; }
       pathIds = IFAMap.findPath(navFrom, navTo) || [];
-      var info = els.main.querySelector("#routeInfo");
-      if (!pathIds.length) info.textContent = "Keine Route gefunden.";
-      else {
-        info.textContent = "Route: " + pathIds.map(function (id) {
-          return (hall(id) || {}).shortCode || id;
-        }).join(" → ");
-        var target = hall(navTo);
-        if (target && target.floor === 2) IFAMap.setFloor("og");
-        else if (target && target.floor === 1) IFAMap.setFloor("eg");
+      focusStandId = focusStandId; // keep
+      var target = hall(navTo);
+      if (target && target.floor === 2) IFAMap.setFloor("og");
+      else if (target && target.floor === 1) IFAMap.setFloor("eg");
+      selectedHallId = navTo;
+      if (!routeHint) routeHint = (target && target.name) || navTo;
+      paintRouteInfo();
+      if (!pathIds.length) {
+        els.main.querySelector("#routeInfo").textContent = "Keine Route gefunden.";
       }
       paintMapCard(card);
       bind(card);
+    };
+
+    var openTarget = els.main.querySelector("#btnOpenTarget");
+    if (openTarget) openTarget.onclick = function () {
+      if (!navTo) return;
+      selectedHallId = navTo;
+      tab = "hall";
+      render();
     };
 
     els.main.querySelector("#btnNew").onclick = function () {
@@ -533,7 +663,7 @@
 
     els.main.innerHTML =
       '<input class="search" id="search" placeholder="Stand suchen…" value="' + escAttr(query) + '" />' +
-      '<div class="map-card">' + IFAMap.renderHallFloor(h.id, list, state.standVisits) + "</div>" +
+      '<div class="map-card">' + IFAMap.renderHallFloor(h.id, list, state.standVisits, focusStandId) + "</div>" +
       '<div class="chip-row">' +
       '<button type="button" class="chip hint-chip" id="hallQr">QR scannen</button>' +
       '<button type="button" class="chip hint-chip" id="hallManual">Manuell</button>' +
@@ -544,7 +674,7 @@
       '<h2 class="section-title">Stände (' + list.length + ')</h2><div class="hall-list">' +
       (list.length ? list.map(function (s) {
         var v = state.standVisits[s.id];
-        return '<button type="button" class="hall-row" data-stand="' + s.id + '">' +
+        return '<button type="button" class="hall-row' + (focusStandId === s.id ? " focus" : "") + '" data-stand="' + s.id + '">' +
           '<span class="hall-code ' + (v && v.visited ? "visited" : "") + '">' + (v && v.visited ? "✓" : "·") + "</span>" +
           '<span class="hall-meta"><strong>' + esc(s.name) + "</strong><span>" +
           esc(s.booth || "ohne Nr.") + (state.bookmarks[s.id] ? " · gemerkt" : "") +
@@ -663,10 +793,11 @@
       "</span><span>" +
       (categoryFilter ? esc(catLabel(categoryFilter)) : "Alle Kategorien") +
       "</span></div>" +
+      '<p class="muted search-nav-hint">Treffer tippen → Route auf dem Plan</p>' +
       (hallHits.length ?
         '<div class="hall-hit"><p class="section-title">Hallen</p><div class="search-list">' +
         hallHits.map(function (h) {
-          return '<button type="button" class="search-row" data-hall="' + h.id + '">' +
+          return '<button type="button" class="search-row" data-nav-hall="' + h.id + '">' +
             '<span class="rail" style="background:' + escAttr(h.color || catColor(h.category)) + '"></span>' +
             '<span class="search-copy"><strong>' + esc(h.name) + "</strong><span>" +
             esc(catLabel(h.category)) + " · " + (h.floor === 2 ? "OG" : "EG") +
@@ -677,14 +808,14 @@
       (shown.length ? shown.map(function (s) {
         var h = hall(s.hallId) || {};
         var visited = state.standVisits[s.id] && state.standVisits[s.id].visited;
-        return '<button type="button" class="search-row" data-stand="' + s.id + '">' +
+        return '<button type="button" class="search-row" data-nav-stand="' + s.id + '">' +
           '<span class="rail" style="background:' + escAttr(h.color || catColor(h.category)) + '"></span>' +
           '<span class="search-copy"><strong>' + esc(s.name) + "</strong><span>" +
           esc(h.name || s.hallId) + (s.booth ? " · " + esc(s.booth) : "") +
           (visited ? " · besucht" : "") +
           (state.bookmarks[s.id] ? " · gemerkt" : "") +
           "</span></span>" +
-          '<span class="go">' + esc(h.shortCode || "") + "</span></button>";
+          '<span class="go">Route</span></button>';
       }).join("") :
         '<div class="empty">Tipp: „Audio“, „DJI“ oder „H2.2“ eingeben</div>') +
       "</div>";

@@ -202,7 +202,7 @@ window.IFAMap = (function () {
     return svg;
   }
 
-  function renderHallFloor(hallId, stands, visits) {
+  function renderHallFloor(hallId, stands, visits, focusStandId) {
     var hall = hallById(hallId);
     if (!hall) return "";
     var list = (stands || []).filter(function (s) { return s.hallId === hallId; });
@@ -222,14 +222,17 @@ window.IFAMap = (function () {
     } else {
       list.forEach(function (s) {
         var v = (visits && visits[s.id]) || {};
+        var focused = focusStandId && focusStandId === s.id;
         var x = typeof s.x === "number" ? s.x : 20;
         var y = typeof s.y === "number" ? s.y : 30;
-        var fill = v.visited ? "#14b8a6" : "#1e293b";
-        var stroke = v.visited ? "#5eead4" : "rgba(255,255,255,0.2)";
+        var fill = focused ? "#f59e0b" : (v.visited ? "#14b8a6" : "#1e293b");
+        var stroke = focused ? "#fde68a" : (v.visited ? "#5eead4" : "rgba(255,255,255,0.2)");
+        var sw = focused ? "0.9" : "0.4";
         svg +=
-          '<g class="stand-node" data-stand="' + esc(s.id) + '" style="cursor:pointer">' +
+          '<g class="stand-node' + (focused ? " focused" : "") + '" data-stand="' + esc(s.id) + '" style="cursor:pointer">' +
           '<rect x="' + x + '" y="' + y + '" width="18" height="12" rx="1.2" fill="' + fill +
-          '" stroke="' + stroke + '" stroke-width="0.4"></rect>' +
+          '" stroke="' + stroke + '" stroke-width="' + sw + '"></rect>' +
+          (focused ? '<circle cx="' + (x + 9) + '" cy="' + (y - 2) + '" r="1.6" fill="#fbbf24" stroke="#fff7ed" stroke-width="0.35"></circle>' : "") +
           '<text x="' + (x + 9) + '" y="' + (y + 7.2) +
           '" text-anchor="middle" fill="#ecfeff" font-size="2.2" font-weight="700">' +
           esc((s.name || "").slice(0, 8)) +
