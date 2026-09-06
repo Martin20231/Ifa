@@ -308,6 +308,24 @@
     });
   }
 
+  function paintMapCard(card) {
+    var fl = IFAMap.getFloor();
+    card.innerHTML =
+      '<div class="floor-toggle seg" role="group" aria-label="Ebene">' +
+      '<button type="button" data-floor="eg" class="' + (fl === "eg" ? "active" : "") + '">EG (.1)</button>' +
+      '<button type="button" data-floor="og" class="' + (fl === "og" ? "active" : "") + '">OG (.2)</button>' +
+      "</div>" +
+      IFAMap.renderSiteMap({ selectedId: selectedHallId, pathIds: pathIds, visited: visitedHallMap() }) +
+      '<p class="muted map-caption">Wie der IFA-Plan · EG/OG umschalten · Route türkis · Besucht grün</p>';
+    card.querySelectorAll("[data-floor]").forEach(function (btn) {
+      btn.onclick = function () {
+        IFAMap.setFloor(btn.getAttribute("data-floor"));
+        paintMapCard(card);
+        bind(card);
+      };
+    });
+  }
+
   function renderMap() {
     els.title.textContent = "Lageplan";
     els.actions.innerHTML = '<button type="button" class="icon-chip" id="quickQr">QR</button>';
@@ -318,15 +336,16 @@
     }).join("");
 
     els.main.innerHTML =
-      '<div class="map-card" id="mapCard">' +
-      IFAMap.renderSiteMap({ selectedId: selectedHallId, pathIds: pathIds, visited: visitedHallMap() }) +
-      '<p class="muted map-caption">Halle tippen · Route türkis · Besucht grün</p></div>' +
+      '<div class="map-card" id="mapCard"></div>' +
       '<div class="nav-card"><h2>Navigation</h2>' +
       '<div class="nav-row"><label>Von</label><select id="navFrom">' + opts + "</select></div>" +
       '<div class="nav-row"><label>Nach</label><select id="navTo">' + opts + "</select></div>" +
       '<button type="button" class="primary-btn" id="btnRoute">Route zeigen</button>' +
       '<p class="muted" id="routeInfo"></p></div>' +
       '<button type="button" class="secondary-btn" id="btnNew">+ Stand ohne QR anlegen</button>';
+
+    var card = els.main.querySelector("#mapCard");
+    paintMapCard(card);
 
     var fromSel = els.main.querySelector("#navFrom");
     var toSel = els.main.querySelector("#navTo");
@@ -344,11 +363,12 @@
         info.textContent = "Route: " + pathIds.map(function (id) {
           return (hall(id) || {}).shortCode || id;
         }).join(" → ");
+        // Ebene an Ziel anpassen, wenn gestapelt
+        var target = hall(navTo);
+        if (target && target.floor === 2) IFAMap.setFloor("og");
+        else if (target && target.floor === 1) IFAMap.setFloor("eg");
       }
-      var card = els.main.querySelector("#mapCard");
-      card.innerHTML =
-        IFAMap.renderSiteMap({ selectedId: selectedHallId, pathIds: pathIds, visited: visitedHallMap() }) +
-        '<p class="muted map-caption">Halle tippen · Route türkis · Besucht grün</p>';
+      paintMapCard(card);
       bind(card);
     };
 

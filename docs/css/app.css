@@ -399,6 +399,12 @@ button, input, textarea { font: inherit; color: inherit; }
 }
 .site-map, .hall-floor { width: 100%; height: auto; display: block; border-radius: 12px; }
 .map-caption { margin: 8px 0 0; font-size: 0.78rem; }
+.floor-toggle {
+  display: inline-flex;
+  margin-bottom: 10px;
+}
+.floor-toggle.seg { width: 100%; justify-content: stretch; }
+.floor-toggle.seg button { flex: 1; }
 .nav-card h2, .section-title {
   margin: 0 0 10px;
   font-size: 0.95rem;
